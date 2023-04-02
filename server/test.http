@@ -11,5 +11,27 @@ Content-Type: image/jpeg
 Content-Disposition: form-data; name="album"
 Content-Type: text/plain
 
-album2
+album4
 ------FormBoundary1234
+
+
+#############
+GET http://localhost:3000/api/photos HTTP/1.1
+
+#########
+
+GET http://localhost:3000/api/photos/1680473412945 HTTP/1.1
+
+#########
+
+DELETE http://localhost:3000/api/photos/1680471759667 HTTP/1.1
+
+##########
+
+PATCH  http://localhost:3000/api/photos HTTP/1.1
+content-type: application/json
+
+{
+  "id": 1680473619029,
+  "a": 111111
+}
