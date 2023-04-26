@@ -1,9 +1,9 @@
-const getRequestData = require ('./getRequestData')
-const {saveFile, deleteFile} = require("./fileController")
-const {addPhoto, getPhotos, getPhoto, delPhoto, patchPhoto} = require("./jsonController")
+const getRequestData = require ('../getRequestData')
+const {saveFile, deleteFile} = require("../fileController")
+const {addPhoto, getPhotos, getPhoto, delPhoto, patchPhoto} = require("./jsonImageController")
 
 
-const router = async (request, response) => {
+const imageRouter = async (request, response) => {
     switch (request.method) {
         case "GET":
             response.writeHead(200, {'Content-Type': 'application/json'})
@@ -56,4 +56,4 @@ const router = async (request, response) => {
     response.end()
 }
 
-module.exports = router
+module.exports = imageRouter
