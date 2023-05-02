@@ -1,6 +1,6 @@
 const getRequestData = require ('../getRequestData')
-const {saveFile, deleteFile} = require("../fileController")
-const {addPhoto, getPhotos, getPhoto, delPhoto, patchPhoto, addTag, getTags, addTags} = require("./jsonController")
+const {saveFile, deleteFile} = require("../controllers/fileController")
+const {addPhoto, getPhotos, getPhoto, delPhoto, patchPhoto, addTag, getTags, addTags} = require("../controllers/imageController")
 
 
 const imageRouter = async (request, response) => {

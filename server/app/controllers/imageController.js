@@ -1,5 +1,5 @@
-const {Photo, photosArray} = require("./model")
-const {getTag} = require("../tags/jsonController")
+const {Photo, photosArray} = require("../models/Photo")
+const {getTag} = require("../controllers/tagsController")
 
 module.exports = {
     addPhoto: (photoData) => {

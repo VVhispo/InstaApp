@@ -1,6 +1,5 @@
 const getRequestData = require ('../getRequestData')
-const {init, getRawTags, getTags, getTag, addTag} = require("./jsonController")
-const {tagsArray} = require("./model")
+const {init, getRawTags, getTags, getTag, addTag} = require("../controllers/tagsController")
 
 const tagsRouter = async (request, response) => {
     switch (request.method) {

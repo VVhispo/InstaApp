@@ -1,10 +1,10 @@
-const {Tag, tagsArray} = require("./model")
+const {Tag, tagsArray} = require("../models/Tag")
 const fs = require("fs")
 const path = require("path")
 
 module.exports = {
     init: () => {
-        const data = fs.readFileSync(path.join(__dirname,'./tags.json'));
+        const data = fs.readFileSync(path.join(__dirname,'../data/tags.json'));
         const tags = JSON.parse(data);
         for(let t in tags){
            new Tag(tags[t], 0);

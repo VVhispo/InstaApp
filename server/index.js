@@ -1,7 +1,7 @@
 const http = require('http');
-const imageRouter = require("./app/images/imageRouter")
-const tagsRouter = require("./app/tags/tagsRouter")
-const {init} = require("./app/tags/jsonController")
+const imageRouter = require("./app/routers/imageRouter")
+const tagsRouter = require("./app/routers/tagsRouter")
+const {init} = require("./app/controllers/tagsController")
 
 http
     .createServer(async (req, res) => {   
