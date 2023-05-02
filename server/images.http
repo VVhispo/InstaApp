@@ -35,3 +35,28 @@ content-type: application/json
   "id": 1680473619029,
   "a": 111111
 }
+
+
+#########
+
+PATCH  http://localhost:3000/api/photos/tags HTTP/1.1
+content-type: application/json
+
+{
+  "photo_id":  1683011612435,
+  "tag_id": 4
+}
+
+####
+
+PATCH  http://localhost:3000/api/photos/tags/mass HTTP/1.1
+content-type: application/json
+
+{
+  "photo_id":  1683012270432,
+  "tags": [3,4,5,6]
+}
+
+####
+
+GET http://localhost:3000/api/photos/tags/1683011612435 HTTP/1.1

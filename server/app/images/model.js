@@ -11,16 +11,29 @@ class Photo {
                 "lastModifiedDate": this.id,
            }
         ]
+        this.tags = []
         photosArray.push(this)
     }
-    getUrl(){ return this.url }
-    getId(){ return this.id }
     update(){
         this.history.push({
             "status": "change " + this.history.length.toString(),
             "lastModifiedDate": Date.now(),
         })
         this.lastChange = this.history[this.history.length - 1].status
+    }
+    addTag(tag){
+        if(!this.tags.some(t =>  t.id == tag.id)) this.tags.push(tag)
+    }
+    addTags(tags){
+        for(let t in tags){
+            if(!this.tags.some(i =>  i.id == tags[t].id)) this.tags.push(tags[t])
+        }
+    }
+    getTags(){
+        return {
+            id: this.id,
+            tags: this.tags
+        }
     }
 }
 

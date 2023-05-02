@@ -1,6 +1,6 @@
 const getRequestData = require ('../getRequestData')
 const {saveFile, deleteFile} = require("../fileController")
-const {addPhoto, getPhotos, getPhoto, delPhoto, patchPhoto} = require("./jsonImageController")
+const {addPhoto, getPhotos, getPhoto, delPhoto, patchPhoto, addTag, getTags, addTags} = require("./jsonController")
 
 
 const imageRouter = async (request, response) => {
@@ -16,7 +16,15 @@ const imageRouter = async (request, response) => {
                     response.writeHead(404, {'Content-Type': 'text/html'})
                     response.write("ID not found!")
                 }
+            }else if(request.url.match(/\/api\/photos\/tags\/([0-9]+)/)){
+                const tags = getTags(request.url.split("/")[request.url.split("/").length - 1])
+                if(tags) response.write(tags)
+                else{
+                    response.writeHead(404, {'Content-Type': 'text/html'})
+                    response.write("ID not found!")
+                }
             }
+            
             break;
         case "POST":
             response.writeHead(201, {'Content-Type': 'application/json'})
@@ -47,6 +55,22 @@ const imageRouter = async (request, response) => {
                 const idPatched = patchPhoto(JSON.parse(data))
                 if(idPatched){ response.write("Successfuly patched photo with id " + idPatched) }
                 else {
+                    response.writeHead(404, {'Content-Type': 'text/html'})
+                    response.write("ID not found")
+                }
+            }else if(request.url == "/api/photos/tags"){
+                const data = await getRequestData(request)
+                const photo = addTag(JSON.parse(data))
+                if(photo) response.write(photo)
+                else{
+                    response.writeHead(404, {'Content-Type': 'text/html'})
+                    response.write("ID not found")
+                }
+            }else if(request.url == "/api/photos/tags/mass"){
+                const data = await getRequestData(request)
+                const photo = addTags(JSON.parse(data))
+                if(photo) response.write(photo)
+                else{
                     response.writeHead(404, {'Content-Type': 'text/html'})
                     response.write("ID not found")
                 }
