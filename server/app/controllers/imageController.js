@@ -14,6 +14,11 @@ module.exports = {
         })
         return JSON.stringify(photo)
     },
+    getPhotosFromFolder: (folder_name) => {
+        const photos = photosArray.filter(i => {return i.album == folder_name})
+        if(photos.length == 0) return null
+        else return JSON.stringify(photos)
+    },
     delPhoto: (id) => {
         const index = photosArray.findIndex(item => {
             return item.id == id
@@ -31,6 +36,16 @@ module.exports = {
         if(!photo) return null
         photo.update()
         return photo.id
+    },
+    applyFilterUpdate: (data) => {
+        const {url, status , id} = data
+        if(!url || !status || !id) return null
+        const photo = photosArray.find(item => {
+            return item.id == parseInt(id)
+        })
+        if(!photo) return null
+        photo.update(status, url)
+        return JSON.stringify(photo)
     },
     getTags: (id) => {
         const photo = photosArray.find(item => {

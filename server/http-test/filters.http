@@ -1,0 +1,39 @@
+POST http://localhost:3000/api/photos HTTP/1.1
+Content-Type: multipart/form-data; boundary=----FormBoundary1234
+
+------FormBoundary1234
+Content-Disposition: form-data; name="file"; filename="input.jpg"
+Content-Type: image/jpeg
+
+< ./input.jpg
+
+------FormBoundary1234
+Content-Disposition: form-data; name="album"
+Content-Type: text/plain
+
+album4
+------FormBoundary1234
+
+########
+
+GET http://localhost:3000/api/filters/metadata/1684376128252 HTTP/1.1
+
+####
+
+PATCH http://localhost:3000/api/filters HTTP/1.1
+Content-Disposition: form-data; name="data"
+Content-Type: application/json
+
+{
+  "id": 1684376238030,
+  "filterType": "grayscale",
+  "dimensions": {
+    "width": 640,
+    "height": 588
+  },
+  "tint": {
+    "r": 255,
+    "g": 0, 
+    "b": 0
+    }
+}

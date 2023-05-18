@@ -8,7 +8,7 @@ module.exports = {
         return new Promise((resolve)=>{
             form.parse(request, async(err, fields, files) => {
                 if(err) return null
-                const uploadFolder = path.join(__dirname,"../uploads",fields.album);
+                const uploadFolder = path.join(__dirname,"../../uploads",fields.album);
                 if (!fs.existsSync(uploadFolder)){
                     fs.mkdirSync(uploadFolder, { recursive: true });
                 }

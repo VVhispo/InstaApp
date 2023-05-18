@@ -14,12 +14,21 @@ class Photo {
         this.tags = []
         photosArray.push(this)
     }
-    update(){
-        this.history.push({
-            "status": "change " + this.history.length.toString(),
-            "lastModifiedDate": Date.now(),
-        })
-        this.lastChange = this.history[this.history.length - 1].status
+    update(status = null, url = null){
+        if(!status && !url){
+            this.history.push({
+                "status": "change " + this.history.length.toString(),
+                "lastModifiedDate": Date.now(),
+            }) 
+        }else{
+            this.history.push({
+                "status": status,
+                "lastModifiedDate": Date.now(),
+                "url": url
+            })
+        }
+        this.lastChange = this.history[this.history.length - 1].lastModifiedDate
+        
     }
     addTag(tag){
         if(!this.tags.some(t =>  t.id == tag.id)) this.tags.push(tag)
