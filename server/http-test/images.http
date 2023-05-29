@@ -20,11 +20,11 @@ GET http://localhost:3000/api/photos HTTP/1.1
 
 #########
 
-GET http://localhost:3000/api/photos/1684371408712 HTTP/1.1
+GET http://localhost:3000/api/photos/168540157050 HTTP/1.1
 
 #########
 
-DELETE http://localhost:3000/api/photos/1684371408712 HTTP/1.1
+DELETE http://localhost:3000/api/photos/168501688243 HTTP/1.1
 
 ##########
 
@@ -36,7 +36,7 @@ PATCH  http://localhost:3000/api/photos/tags HTTP/1.1
 content-type: application/json
 
 {
-  "photo_id":  1684371404584,
+  "photo_id":  1685401835002,
   "tag_id": 4
 }
 
@@ -46,12 +46,20 @@ PATCH  http://localhost:3000/api/photos/tags/mass HTTP/1.1
 content-type: application/json
 
 {
-  "photo_id":  1684371404584,
-  "tags": [3,4,5,6]
+  "photo_id": 1685402061098,
+  "tags": [3,4,5,56]
 }
 
 ####
 
-GET http://localhost:3000/api/photos/tags/1684371404584 HTTP/1.1
+GET http://localhost:3000/api/photos/tags/1685402061098 HTTP/1.1
+
+#####
+
+GET http://localhost:3000/api/photos/getfile/1685402458357 HTTP/1.1
+
+#####
+
+GET http://localhost:3000/api/photos/getfile/1685402458357/grayscale HTTP/1.1
 
 

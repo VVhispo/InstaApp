@@ -1,77 +1,68 @@
 const fs = require('fs');
-const formidable = require('formidable');
 const sharp = require("sharp");
-const form = formidable({ multiples: true });
 const IC = require("./imageController")
+
+
 
 module.exports = {
     getPhotoMeta: async(id) => {
-        return new Promise(async (resolve, reject) => {
-            try {
-                const photo = IC.getPhoto(id)
-                if (photo) {
-                    const url = JSON.parse(photo).url
-                    const metadata =  await sharp(url).metadata();
-                    resolve(metadata)
-                }
-                else resolve(null)
-            } catch (err) {
-                console.log(err.message)
-                reject(null)
-            }
-        })
-    },
-    applyFilter: async(request) => {
-        return new Promise(async (resolve, reject) => {
-            form.parse(request, async function(err, fields) {
-                if(err){
-                    reject("err")
-                }
-                const photo = IC.getPhoto(fields.id)
-                if(!photo) return null
-                const url = JSON.parse(photo).url
+        try {
+            const photo = IC.getPhoto(id)
+            if (!photo) return JSON.stringify({error: "Photo not found"})
 
-                switch(fields.filterType){
-                    case "resize":
-                        if(fields.dimensions != null){
-                            await sharp(url)
-                                .resize({
-                                    width: fields.dimensions.width,
-                                    height: fields.dimensions.height
-                                })
-                                .toFile(url.slice(0,-4) + "_"+fields.filterType + ".jpg");
-                        }
-                        break;
-                    case "tint":
-                        if(fields.tint != null){
-                            await sharp(url)
-                            .tint({
-                                r:fields.tint.r,
-                                g:fields.tint.g,
-                                b:fields.tint.b
-                            })
-                                .toFile(url.slice(0,-4) + "_"+fields.filterType + ".jpg");
-                        }
-                        break;
-                    case "negate":
-                        await sharp(url)
-                            .negate()
-                            .toFile(url.slice(0,-4) + "_"+fields.filterType + ".jpg");
-                        break;
-                    case "grayscale":
-                        await sharp(url)
-                            .grayscale()
-                            .toFile(url.slice(0,-4) + "_"+fields.filterType + ".jpg");
-                        break;
-                    default: return null;
-                }        
-                const res = await IC.applyFilterUpdate({
-                    id: JSON.parse(photo).id,
-                    status: fields.filterType,
-                    url: url.slice(0,-4) + "_"+fields.filterType + ".jpg"
+            const url = JSON.parse(photo).url
+            const metadata =  await sharp(url).metadata();
+            return JSON.stringify(metadata)
+        } catch (err) {
+            return JSON.stringify({error: err.message})
+        }
+    },
+    applyFilter: async(data) => {
+        const {id, filterType, dimensions, tint} = data
+        const photo = IC.getPhoto(id)
+        if(!photo) return JSON.stringify({error: "Photo not found"})
+        const url = JSON.parse(photo).url
+
+        
+        console.log(!dimensions.width)
+
+        switch(filterType){
+            case "resize":
+                if(!dimensions || !dimensions.width || !dimensions.height) return JSON.stringify({error: "Dimensions not specified"})
+                await sharp(url)
+                    .resize({
+                        width: dimensions.width,
+                        height: dimensions.height
+                    })
+                    .toFile(url.slice(0,-4) + "_"+ filterType + ".jpg");
+                break;
+            case "tint":
+                if(!tint || !tint.r || !tint.g || !tint.b) return JSON.stringify({error: "Color values not specified"})
+                await sharp(url)
+                .tint({
+                    r:tint.r,
+                    g:tint.g,
+                    b:tint.b
                 })
-                resolve(res)
-            })
+                    .toFile(url.slice(0,-4) + "_"+ filterType + ".jpg");
+                break;
+            case "negate":
+                await sharp(url)
+                    .negate()
+                    .toFile(url.slice(0,-4) + "_"+ filterType + ".jpg");
+                break;
+            case "grayscale":
+                await sharp(url)
+                    .grayscale()
+                    .toFile(url.slice(0,-4) + "_"+ filterType + ".jpg");
+                break;
+            default: return JSON.stringify({error: "Filter unknown"});
+        }        
+        const res = await IC.applyFilterUpdate({
+            id: JSON.parse(photo).id,
+            status: filterType,
+            url: url.slice(0,-4) + "_"+ filterType + ".jpg"
         })
+        return res
     }
 }

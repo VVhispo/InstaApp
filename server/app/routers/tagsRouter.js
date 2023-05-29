@@ -12,11 +12,8 @@ const tagsRouter = async (request, response) => {
             }else if(request.url.match(/\/api\/tags\/([0-9]+)/)){
                 const id = request.url.split("/")[request.url.split("/").length - 1]
                 const tag = TC.getTag(id)
-                if(tag) response.write(tag)
-                else {
-                    response.writeHead(404, {'Content-Type': 'text/html'})
-                    response.write("ID not found")
-                }
+                if(JSON.parse(tag).error) response.writeHead(404, {'Content-Type': 'application/json'})
+                response.write(tag)
             }
             break;
         case "POST":
@@ -24,11 +21,8 @@ const tagsRouter = async (request, response) => {
             if(request.url == "/api/tags"){
                 const data = await getRequestData(request)
                 const newTag = TC.addTag(JSON.parse(data))
-                if(newTag) response.write(newTag)
-                else{
-                    response.writeHead(404, {'Content-Type': 'text/html'})
-                    response.write("Tag already exists")
-                } 
+                if(JSON.parse(newTag).error) response.writeHead(404, {'Content-Type': 'application/json'})
+                response.write(newTag)
             }
     }
     response.end()

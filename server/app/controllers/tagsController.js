@@ -19,7 +19,7 @@ module.exports = {
     },
     getTag: (id) => {
         const tag = tagsArray.find(t => {return t.id == id})
-        if(tag == undefined) return null
+        if(tag == undefined) return JSON.stringify({error: "Tag not found"})
         return JSON.stringify(tag)
     },
     addTag: (data) => {
@@ -28,6 +28,6 @@ module.exports = {
             const tag = new Tag(name, popularity)
             return JSON.stringify(tag)
         }
-        return null;
+        return JSON.stringify({error: "Tag already exists"});
     }
 }

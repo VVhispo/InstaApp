@@ -32,5 +32,13 @@ module.exports = {
     },
     deleteFile: (url) => {
         fs.unlinkSync(url)
-    }  
+    },
+    readPhoto: (url) => {
+        return new Promise((resolve, reject)=>{
+            fs.readFile(url, (err, data) => {
+                if(err) reject(null);
+                else resolve(data)
+            })
+        })
+    },
 }

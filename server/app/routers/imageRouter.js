@@ -1,7 +1,6 @@
 const getRequestData = require ('../getRequestData')
-const {saveFile, deleteFile} = require("../controllers/fileController")
+const {saveFile, deleteFile, readPhoto} = require("../controllers/fileController")
 const IC = require("../controllers/imageController") 
-// const {addPhoto, getPhotos, getPhoto, delPhoto, patchPhoto, addTag, getTags, addTags} = require("../controllers/imageController")
 
 
 const imageRouter = async (request, response) => {
@@ -12,25 +11,53 @@ const imageRouter = async (request, response) => {
                 response.write(IC.getPhotos())
             }else if(request.url.match(/\/api\/photos\/([0-9]+)/)){
                 const photo = IC.getPhoto(request.url.split("/")[request.url.split("/").length - 1])
-                if(photo) response.write(photo)
-                else{
-                    response.writeHead(404, {'Content-Type': 'text/html'})
-                    response.write("ID not found!")
-                }
+                if(JSON.parse(photo).error) response.writeHead(404, {'Content-Type': 'application/json'})
+                response.write(photo)
             }else if(request.url.match(/\/api\/photos\/tags\/([0-9]+)/)){
                 const tags = IC.getTags(request.url.split("/")[request.url.split("/").length - 1])
-                if(tags) response.write(tags)
-                else{
-                    response.writeHead(404, {'Content-Type': 'text/html'})
-                    response.write("ID not found!")
+                if(JSON.parse(tags).error) response.writeHead(404, {'Content-Type': 'application/json'})
+                response.write(tags)
+            }else if(request.url.match(/\/api\/photos\/getfile\/([0-9]+)\/[a-zA-Z]/)){
+                const filter = request.url.split("/")[request.url.split("/").length - 1]
+                const photo = IC.getPhoto(request.url.split("/")[request.url.split("/").length - 2])
+                if(JSON.parse(photo).error){
+                    response.writeHead(404, {'Content-Type': 'application/json'})
+                    response.write(photo)
+                    break
                 }
+                const url = JSON.parse(photo).history.find(i => {
+                    return i.status == filter
+                })
+                if(!url){
+                    response.writeHead(404, {'Content-Type': 'application/json'})
+                    response.write(JSON.stringify({error: `Filter ${filter} not found for this photo!`}))
+                    break
+                }
+                const res = await readPhoto(url.url)
+                if(!res){
+                    response.writeHead(404, {'Content-Type': 'application/json'})
+                    response.write(JSON.stringify({error: "Error while reading file!"}))
+                }
+                response.writeHead(200, {'Content-type':'image/jpeg'})
+                response.write(res)
+            }else if(request.url.match(/\/api\/photos\/getfile\/([0-9]+)/)){
+                const photo = IC.getPhoto(request.url.split("/")[request.url.split("/").length - 1])
+                if(JSON.parse(photo).error){
+                    response.writeHead(404, {'Content-Type': 'application/json'})
+                    response.write(photo)
+                    break;
+                }
+                const res = await readPhoto(JSON.parse(photo).url)
+                if(!res){
+                    response.writeHead(404, {'Content-Type': 'application/json'})
+                    response.write(JSON.stringify({error: "Error while reading file!"}))
+                }
+                response.writeHead(200, {'Content-type':'image/jpeg'})
+                response.write(res)
             }else if(request.url.match(/\/api\/photos\/([a-zA-Z]+)/)){
                 const photos = IC.getPhotosFromFolder(request.url.split("/")[3])
-                if(photos) response.write(photos)
-                else{
-                    response.writeHead(404, {'Content-Type': 'text/html'})
-                    response.write("No photos found!")
-                }
+                if(JSON.parse(photos).error) response.writeHead(404, {'Content-Type': 'application/json'})
+                response.write(photos)
             }
             break;
         case "POST":
@@ -45,12 +72,12 @@ const imageRouter = async (request, response) => {
             response.writeHead(200, {'Content-Type': 'text/html'})
             if(request.url.match(/\/api\/photos\/([0-9]+)/)){
                 const urlDeleted = IC.delPhoto(request.url.split("/")[request.url.split("/").length - 1])
-                if(urlDeleted){
-                    deleteFile(urlDeleted)
-                    response.write("Successfuly deleted photo with id " + request.url.split("/")[request.url.split("/").length - 1])
+                if(!JSON.parse(urlDeleted).error){
+                    deleteFile(JSON.parse(urlDeleted))
+                    response.write(JSON.stringify({message:"Successfuly deleted photo with id " + request.url.split("/")[request.url.split("/").length - 1]}))
                 }else{
-                    response.writeHead(404, {'Content-Type': 'text/html'})
-                    response.write("ID not found")
+                    response.writeHead(404, {'Content-Type': 'application json'})
+                    response.write(urlDeleted)
                 }
                 
             }
@@ -60,27 +87,18 @@ const imageRouter = async (request, response) => {
             if(request.url == "/api/photos"){
                 const data = await getRequestData(request)
                 const idPatched = IC.patchPhoto(JSON.parse(data))
-                if(idPatched){ response.write("Successfuly patched photo with id " + idPatched) }
-                else {
-                    response.writeHead(404, {'Content-Type': 'text/html'})
-                    response.write("ID not found")
-                }
+                if(JSON.parse(idPatched).error) response.writeHead(404, {'Content-Type': 'application/json'})
+                response.write(idPatched)
             }else if(request.url == "/api/photos/tags"){
                 const data = await getRequestData(request)
                 const photo = IC.addTag(JSON.parse(data))
-                if(photo) response.write(photo)
-                else{
-                    response.writeHead(404, {'Content-Type': 'text/html'})
-                    response.write("ID not found")
-                }
+                if(JSON.parse(photo).error) response.writeHead(404, {'Content-Type': 'application/json'})
+                response.write(photo)
             }else if(request.url == "/api/photos/tags/mass"){
                 const data = await getRequestData(request)
                 const photo = IC.addTags(JSON.parse(data))
-                if(photo) response.write(photo)
-                else{
-                    response.writeHead(404, {'Content-Type': 'text/html'})
-                    response.write("ID not found")
-                }
+                if(JSON.parse(photo).error) response.writeHead(404, {'Content-Type': 'application/json'})
+                response.write(photo)
             }
             break;
     }

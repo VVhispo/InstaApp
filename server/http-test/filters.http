@@ -16,7 +16,7 @@ album4
 
 ########
 
-GET http://localhost:3000/api/filters/metadata/1684376128252 HTTP/1.1
+GET http://localhost:3000/api/filters/metadata/168540134461 HTTP/1.1
 
 ####
 
@@ -25,7 +25,7 @@ Content-Disposition: form-data; name="data"
 Content-Type: application/json
 
 {
-  "id": 1684376238030,
+  "id": 1685402458357,
   "filterType": "grayscale",
   "dimensions": {
     "width": 640,
