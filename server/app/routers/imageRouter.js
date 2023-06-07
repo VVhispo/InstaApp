@@ -63,7 +63,7 @@ const imageRouter = async (request, response) => {
         case "POST":
             response.writeHead(201, {'Content-Type': 'application/json'})
             if(request.url == "/api/photos"){
-                const uploadData = await saveFile(request, response)
+                const uploadData = await saveFile(request, response, false)
                 const newPhoto = IC.addPhoto(uploadData)
                 response.write(newPhoto)
             }

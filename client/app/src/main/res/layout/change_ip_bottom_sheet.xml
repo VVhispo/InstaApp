@@ -1,0 +1,42 @@
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:paddingBottom="8dp"
+    android:paddingTop="10dp"
+    android:paddingHorizontal="20dp"
+    android:orientation="vertical"
+    android:background="#DCFFFFFF"
+    android:gravity="center_horizontal"
+    android:id="@+id/bottom_sheet_main_layout">
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Set server IP"
+        android:textSize="18dp"
+        android:textColor="@color/black"/>
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+        <EditText
+            android:layout_width="220dp"
+            android:layout_height="wrap_content"
+            android:id="@+id/input_ip"
+            android:layout_marginRight="20dp"
+            android:textColor="@color/black"
+            android:theme="@style/EditTextTheme"
+            />
+        <com.google.android.material.button.MaterialButton
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingHorizontal="20dp"
+            android:text="save"
+            android:layout_marginLeft="20dp"
+            android:textColor="@color/white"
+            app:cornerRadius="30dp"
+            app:backgroundTint="@color/purple"
+            android:id="@+id/saveBtn"/>
+    </LinearLayout>
+</LinearLayout>

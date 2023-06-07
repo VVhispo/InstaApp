@@ -1,5 +1,6 @@
 const getRequestData = require ('../getRequestData')
 const UC = require("../controllers/userController")
+const {saveFile, readPhoto} = require("../controllers/fileController")
 
 const usersRouter = async(request, response) => {
     switch(request.method){
@@ -11,11 +12,29 @@ const usersRouter = async(request, response) => {
             }
             else if(request.url.match(/\/api\/users\/confirm\/(.*)/)){
                 const token = request.url.split("/")[request.url.split("/").length - 1]
-                console.log(token)
                 const result = await UC.verifyUser(token)
                 if(JSON.parse(result).error) response.writeHead(404, {'Content-Type': 'application/json'})
                 response.write(result)
+            }else if(request.url == "/api/users/profile" && request.headers.authorization
+            && request.headers.authorization.startsWith("Bearer")){
+                const token = request.headers.authorization.split(" ")[1]
+                const result = await UC.getUserProfile(token)
+                if(JSON.parse(result).error) response.writeHead(404, {'Content-Type': 'application/json'})
+                response.write(result)
+            }else if(request.url == "/api/users/profilePic" && request.headers.authorization
+            && request.headers.authorization.startsWith("Bearer")){
+                const token = request.headers.authorization.split(" ")[1]
+                const result = await UC.getUserProfile(token)
+                if(JSON.parse(result).error) {
+                    response.writeHead(404, {'Content-Type': 'application/json'})
+                    response.write(result)
+                }
+                const pic = await readPhoto(JSON.parse(result).profilePicUrl)
+                console.log(result)
+                response.writeHead(200, {'Content-type':'image/jpeg'})
+                response.write(pic)
             }
+
             break;
         case "POST":
             response.writeHead(201, {'Content-Type':'application/json'})
@@ -28,12 +47,19 @@ const usersRouter = async(request, response) => {
                     break;
                 }
                 const token = await UC.registerUser(data);
-                response.write(JSON.stringify({message:`Use this link to verify your account: \nhttp://localhost:3000/api/users/confirm/${JSON.parse(token).token}`}))
+                response.write(JSON.stringify({"token": JSON.parse(token).token}))
             }else if(request.url == "/api/users/login"){
                 const data = await getRequestData(request)
                 const token = await UC.loginUser(data)
                 if(JSON.parse(token).error) response.writeHead(404, {'Content-Type': 'application/json'})
                 response.write(token)
+            }else if(request.url == "/api/users/setProfilePic"){
+                const uploadData = await saveFile(request, response, true)
+                console.log(uploadData)
+                const user = await UC.setUserProfilePic(uploadData)
+                // const res = await readPhoto(JSON.parse(user).user.profilePicUrl)
+                // console.log(res)
+                response.write(JSON.stringify({"message":"success"}))
             }
             break;
     }

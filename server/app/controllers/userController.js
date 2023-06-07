@@ -19,7 +19,7 @@ module.exports = {
         if(Object.values(JSON.parse(data)).filter(i => i.length == 0).length > 0){
             return JSON.stringify({error: 'Empty fields!'})
         }
-        else if(usersArray.some(u => { return u.email == email })){
+        else if(usersArray.some(u => { return u.email == email && u.confirmed})){
             return JSON.stringify({error: 'Account with that email already exists!'})
         }
         return null
@@ -29,9 +29,9 @@ module.exports = {
         try {
             const decoded = await jwt.verify(token, process.env.JWT_KEY)
             const user = usersArray.find(u => { return u.id == decoded.user_id })
-            if(!user) JSON.stringify({error: "User not found"})
+            if(!user) return JSON.stringify({error: "User not found"})
             user.verify()
-            return JSON.stringify({message: "Potwierdzono konto!"})
+            return JSON.stringify({message: "Account confirmed! You can now log in"})
         }
         catch (ex) {
             return JSON.stringify({error: "Token expired!"})
@@ -42,7 +42,7 @@ module.exports = {
         if(!email || !password) return JSON.stringify({error: "Empty fields!"})
         const user = usersArray.find(u => { return u.email == email})
         if(!user) return JSON.stringify({error: "User not found!"})
-        else if(!user.confirmed) return JSON.stringify({error: "You must verify your account first!"})
+        else if(!user.confirmed) return JSON.stringify({error: "Unverified account!"})
         const decrypted = await bcrypt.compare(password, user.password)
         if(!decrypted) return JSON.stringify({error: "Wrong password!"})
         const token = await jwt.sign(
@@ -50,7 +50,32 @@ module.exports = {
             process.env.JWT_KEY,
             { expiresIn: "365d" }
         );
-        return JSON.stringify({token: token})
+        return JSON.stringify({token: token, user_id: user.id})
         
+    },
+    getUserProfile: async(token) => {
+        try{
+            const decoded = await jwt.verify(token, process.env.JWT_KEY)
+            const user = usersArray.find(u => { return u.id == decoded.user_id })
+            if(!user) return JSON.stringify({error: "User not found"})
+            return JSON.stringify({
+                id: user.id,
+                name: user.name, 
+                lastName: user.lastName,
+                email: user.email,
+                profilePicUrl: user.profilePicUrl,
+                bio: user.bio
+            })
+
+        }catch (ex) {
+            return JSON.stringify({error: "Invalid token!"})
+        }
+    },
+    setUserProfilePic: (data) => {
+        const {album, url} = data
+        const user = usersArray.find(u => { return u.id == album })
+        if(!user) return JSON.stringify({"error": "User not found"})
+        user.profilePicUrl = url;
+        return JSON.stringify({user})
     }
 }

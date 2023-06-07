@@ -11,7 +11,7 @@ Content-Type: image/jpeg
 Content-Disposition: form-data; name="album"
 Content-Type: text/plain
 
-album4
+u234234
 ------FormBoundary1234
 
 
@@ -56,7 +56,7 @@ GET http://localhost:3000/api/photos/tags/1685402061098 HTTP/1.1
 
 #####
 
-GET http://localhost:3000/api/photos/getfile/1685402458357 HTTP/1.1
+GET http://localhost:3000/api/photos/getfile/1686081351771 HTTP/1.1
 
 #####
 

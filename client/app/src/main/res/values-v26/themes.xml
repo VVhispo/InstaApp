@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <style name="AppTheme.TextAppearance.Error" parent="Widget.MaterialComponents.TextInputLayout.FilledBox">
+        <item name="android:textColor">@color/error_red</item>
+        <item name="android:iconTint">@color/error_red</item>
+        <item name="android:textColorHint">@color/error_red</item>
+    </style>
+</resources>
