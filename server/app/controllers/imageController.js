@@ -15,10 +15,26 @@ module.exports = {
         if(!photo) return JSON.stringify({error: "Photo not found"})
         return JSON.stringify(photo)
     },
+    setLocation: (data) => {
+        const {id, location} = data
+        const photo = photosArray.find(item => {
+            return item.id == id
+        })
+        if(!photo) return JSON.stringify({error: "Photo not found"})
+        photo.location = location;
+        return JSON.stringify(photo)
+    },
     getPhotosFromFolder: (folder_name) => {
         const photos = photosArray.filter(i => {return i.album == folder_name})
         if(photos.length == 0) return JSON.stringify({error: "Photo not found"})
         else return JSON.stringify(photos)
+    },
+    getFilteredUrl: (id) => {
+        const photo = photosArray.find(item => {
+            return item.id == id
+        })
+        if(!photo) return JSON.stringify({error: "Photo not found"})
+        return JSON.stringify(photo.filteredUrl)
     },
     delPhoto: (id) => {
         const index = photosArray.findIndex(item => {
@@ -44,7 +60,7 @@ module.exports = {
             return item.id == parseInt(id)
         })
         if(!photo) return JSON.stringify({error: "Photo not found"})
-        photo.update(status, url)
+        photo.update(status)
         return JSON.stringify(photo)
     },
     getTags: (id) => {
@@ -63,6 +79,7 @@ module.exports = {
         })
         if(!photo || tag.error) return JSON.stringify({error: "Photo or tag not found"})
         photo.addTag(tag)
+        tag.popularity += 1
         return JSON.stringify(photo)
     },
     addTags: (data) => {
@@ -76,6 +93,9 @@ module.exports = {
         })
         if(!photo || !tags_arr || tags_arr.length == 0 ) return JSON.stringify({error: "Photo or tag not found"})
         photo.addTags(tags_arr)
+        for(tag in tags_arr){
+            tag.popularity += 1
+        }
         return JSON.stringify(photo)
     }
 }

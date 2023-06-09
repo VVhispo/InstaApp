@@ -5,13 +5,45 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".view.main.HomeActivity">
+    <androidx.camera.view.PreviewView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:id="@+id/camera"/>
     <com.google.android.material.imageview.ShapeableImageView
         app:shapeAppearanceOverlay="@style/roundedImageViewRounded"
         android:layout_width="50dp"
         android:layout_height="50dp"
         android:layout_margin="20dp"
-        app:strokeWidth="0dp"
+        app:strokeWidth="1dp"
         android:id="@+id/profile_btn"
         android:scaleType="centerCrop"
         />
+    <Button
+        style="?android:attr/borderlessButtonStyle"
+        android:drawableEnd="@drawable/ic_baseline_replay_24"
+        android:drawableTint="@color/white"
+        app:shapeAppearanceOverlay="@style/roundedImageViewRounded"
+        android:padding="0dp"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:id="@+id/switchCamera_btn"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentRight="true"
+        android:layout_marginBottom="100dp"
+        android:layout_marginRight="75dp"
+        />
+    <Button
+        android:id="@+id/photo_btn"
+        style="?android:attr/borderlessButtonStyle"
+        android:padding="0dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:drawableEnd="@drawable/empty_circle_svgrepo_com"
+        android:drawableTint="@color/white"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="70dp"
+        />
+
+
 </RelativeLayout>

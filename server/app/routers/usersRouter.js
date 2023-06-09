@@ -28,9 +28,9 @@ const usersRouter = async(request, response) => {
                 if(JSON.parse(result).error) {
                     response.writeHead(404, {'Content-Type': 'application/json'})
                     response.write(result)
+                    break;
                 }
                 const pic = await readPhoto(JSON.parse(result).profilePicUrl)
-                console.log(result)
                 response.writeHead(200, {'Content-type':'image/jpeg'})
                 response.write(pic)
             }
@@ -62,6 +62,16 @@ const usersRouter = async(request, response) => {
                 response.write(JSON.stringify({"message":"success"}))
             }
             break;
+        case "PATCH":
+            response.writeHead(200, {"Content-type":"application/json"})
+            if(request.url == "/api/users" && request.headers.authorization
+            && request.headers.authorization.startsWith("Bearer")){
+                const token = request.headers.authorization.split(" ")[1]
+                const data = await getRequestData(request)
+                const user = await UC.patchUserProfile(token, JSON.parse(data));
+                if(JSON.parse(user).error) response.writeHead(404, {"Content-type":"application/json"})
+                response.write(user)
+            }
     }
     response.end()
 }

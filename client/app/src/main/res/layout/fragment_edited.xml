@@ -84,7 +84,6 @@
             android:textColor="@color/black"
             android:textSize="14dp"/>
         <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/bio_input_2"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             app:expandedHintEnabled="false"
@@ -92,9 +91,9 @@
             app:counterMaxLength="90"
             android:layout_marginTop="10dp"
             app:boxStrokeColor="@color/grey_icon"
+            app:hintTextColor="@drawable/text_color_hint"
             android:textColorHint="@color/grey_icon"
-            app:counterTextColor="@color/grey_icon"
-            app:hintTextAppearance="@style/TextAppearance.App.TextInputLayout">
+            app:counterTextColor="@color/grey_icon">
             <EditText
                 android:id="@+id/bio_input"
                 android:layout_width="match_parent"

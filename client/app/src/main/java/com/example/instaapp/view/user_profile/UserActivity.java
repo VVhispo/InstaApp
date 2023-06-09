@@ -24,10 +24,12 @@ import com.example.instaapp.R;
 import com.example.instaapp.api.UsersAPI;
 import com.example.instaapp.databinding.ActivityLoginBinding;
 import com.example.instaapp.databinding.ActivityUserBinding;
+import com.example.instaapp.databinding.FragmentEditedBinding;
 import com.example.instaapp.model.User;
 import com.example.instaapp.view.login_register.LoginActivity;
 import com.example.instaapp.view.main.HomeActivity;
 import com.google.android.material.imageview.ShapeableImageView;
+import com.google.gson.Gson;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -49,6 +51,7 @@ public class UserActivity extends AppCompatActivity {
     private ActivityUserBinding mainBinding;
     private Bitmap pfp;
     private File uploaded_photo = null;
+    private Bitmap uploaded_photo_bm = null;
     private User user;
 
     @Override
@@ -70,14 +73,35 @@ public class UserActivity extends AppCompatActivity {
 
         mainBinding.profilePicEdit.setOnClickListener(v -> loadPicture());
     }
-    public void saveChanges(){
-        if(uploaded_photo != null) {
-            Bitmap btm = BitmapFactory.decodeFile(uploaded_photo.getPath());
-            mainBinding.profilePic.setImageBitmap(btm);
-            post_image();
-        }
-        post_data();
-        getSupportFragmentManager().popBackStack();
+    public void saveChanges(FragmentEditedBinding binding){
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+
+        builder.setMessage("Save changes?");
+
+        builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                User new_data = new User(
+                        binding.inputName.getText().toString(),
+                        binding.inputLastName.getText().toString(),
+                        binding.inputEmail.getText().toString(),
+                        binding.bioInput.getText().toString()
+                );
+                if(new_data.toString() != user.toString()){
+                    post_data(new_data);
+                }
+                getSupportFragmentManager().popBackStack();
+                pfp = uploaded_photo_bm;
+                if(uploaded_photo != null) {
+                    post_image();
+                }
+            }
+        });
+        builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+            }
+        });
+        AlertDialog dialog = builder.create();
+        dialog.show();
     }
     public void post_image(){
         RequestBody requestFile = RequestBody.create(MediaType.parse("multipart/form-data"), uploaded_photo);
@@ -97,6 +121,7 @@ public class UserActivity extends AppCompatActivity {
             @Override
             public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
                 uploaded_photo = null;
+                uploaded_photo_bm = null;
             }
 
             @Override
@@ -105,8 +130,34 @@ public class UserActivity extends AppCompatActivity {
             }
         });
     }
-    public void post_data(){
-//
+    public void post_data(User user_data){
+        SharedPreferences sharedPref = this.getSharedPreferences("data", Context.MODE_PRIVATE);
+        String ip = sharedPref.getString("ip", "http://192.168.1.106:3000");
+        Retrofit retrofit = new Retrofit.Builder()
+                .baseUrl(ip)
+                .addConverterFactory(GsonConverterFactory.create())
+                .build();
+        UsersAPI uAPI = retrofit.create(UsersAPI.class);
+        String token = sharedPref.getString("current_user_token", "none");
+
+        Call<User> call = uAPI.patch_profileData("Bearer " + token, user_data);
+
+        call.enqueue(new Callback<User>() {
+            @Override
+            public void onResponse(Call<User> call, Response<User> response) {
+                if(response.isSuccessful()){
+                    user = response.body();
+                    DisplayFragment fragment = (DisplayFragment) getSupportFragmentManager().findFragmentById(R.id.main_data_layout);
+                    fragment.fillTextViews(user);
+                }
+            }
+
+            @Override
+            public void onFailure(Call<User> call, Throwable t) {
+                Log.d("XXX", t.toString());
+            }
+        });
+
     }
     public void loadPicture(){
         Intent intent = new Intent(Intent.ACTION_PICK);
@@ -124,6 +175,7 @@ public class UserActivity extends AppCompatActivity {
                     InputStream stream = getContentResolver().openInputStream(imgData);
                     Bitmap b = BitmapFactory.decodeStream(stream);
                     mainBinding.profilePic.setImageBitmap(b);
+                    uploaded_photo_bm = b;
                     uploaded_photo = new File(getPath( this, imgData ));
                 }catch(Exception ex){
                     Log.d("XXX", ex.toString());
@@ -181,7 +233,6 @@ public class UserActivity extends AppCompatActivity {
                     fragment.fillTextViews(user);
                 }
             }
-
             @Override
             public void onFailure(Call<User> call, Throwable t) {
                 Log.d("XXX", t.toString());
@@ -214,10 +265,17 @@ public class UserActivity extends AppCompatActivity {
 
 
     public void setProfilePicEditable(boolean b){
-        if(b) mainBinding.profilePicEdit.setVisibility(View.VISIBLE);
+        if(b) {
+            mainBinding.profilePicEdit.setVisibility(View.VISIBLE);
+            Bundle bundle = new Bundle();
+            Gson gson = new Gson();
+            String userJson = gson.toJson(user);
+            bundle.putString("user_data", userJson);
+            getSupportFragmentManager().setFragmentResult("user_data", bundle);
+        }
         else {
-            mainBinding.profilePicEdit.setVisibility(View.INVISIBLE);
             mainBinding.profilePic.setImageBitmap(pfp);
+            mainBinding.profilePicEdit.setVisibility(View.INVISIBLE);
             DisplayFragment fragment = (DisplayFragment) getSupportFragmentManager().findFragmentById(R.id.main_data_layout);
             if(user != null) fragment.fillTextViews(user);
         }

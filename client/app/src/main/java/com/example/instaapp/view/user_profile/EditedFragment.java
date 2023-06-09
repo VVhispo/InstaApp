@@ -10,6 +10,8 @@ import android.view.ViewGroup;
 
 import com.example.instaapp.R;
 import com.example.instaapp.databinding.FragmentEditedBinding;
+import com.example.instaapp.model.User;
+import com.google.gson.Gson;
 
 public class EditedFragment extends Fragment {
 
@@ -27,10 +29,22 @@ public class EditedFragment extends Fragment {
         });
 
         mainBinding.saveBtn.setOnClickListener(v -> {
-            ((UserActivity) getActivity()).saveChanges();
+            ((UserActivity) getActivity()).saveChanges(mainBinding);
         });
 
-
+        getParentFragmentManager()
+                .setFragmentResultListener("user_data", this, (s, b) -> {
+                    Gson gson = new Gson();
+                    User user = gson.fromJson(b.getString("user_data"), User.class);
+                    fillTextEdits(user);
+                });
         return view;
+    }
+
+    public void fillTextEdits(User user){
+        mainBinding.inputName.setText(user.getFirstName());
+        mainBinding.inputLastName.setText(user.getLastName());
+        mainBinding.inputEmail.setText(user.getEmail());
+        mainBinding.bioInput.setText(user.getBio());
     }
 }

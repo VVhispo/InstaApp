@@ -14,5 +14,10 @@
     <color name="grey_icon">#505050</color>
     <color name="light_grey">#F7F7F7</color>
     <color name="grey">#8C8C8C</color>
+    <color name="grey_opa">#8C8C8C8C</color>
     <color name="green_icon">#53CC4F</color>
+    <color name="black_low_opa">#8B000000</color>
+    <color name="blue">#3992D6</color>
+    <color name="silver">#94B4BC</color>
+
 </resources>

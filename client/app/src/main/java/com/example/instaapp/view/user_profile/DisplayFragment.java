@@ -3,6 +3,7 @@ package com.example.instaapp.view.user_profile;
 import android.os.Bundle;
 
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
 
 import android.view.LayoutInflater;
 import android.view.View;
@@ -15,6 +16,7 @@ import com.example.instaapp.model.User;
 public class DisplayFragment extends Fragment {
 
     private FragmentDisplayBinding mainBinding;
+    private User user_data;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -26,6 +28,7 @@ public class DisplayFragment extends Fragment {
         ((UserActivity) getActivity()).setProfilePicEditable(false);
 
         Fragment EditFragment = new EditedFragment();
+
         mainBinding.settingsBtn.setOnClickListener(v -> {
             ((UserActivity) getActivity()).replaceFragment(EditFragment);
             ((UserActivity) getActivity()).setProfilePicEditable(true);
@@ -41,5 +44,6 @@ public class DisplayFragment extends Fragment {
         mainBinding.nameTxt.setText(user.getFullName());
         mainBinding.emailTxt.setText(user.getEmail());
         mainBinding.bioTxt.setText(user.getBio());
+        user_data = user;
     }
 }

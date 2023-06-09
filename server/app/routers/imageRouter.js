@@ -17,23 +17,14 @@ const imageRouter = async (request, response) => {
                 const tags = IC.getTags(request.url.split("/")[request.url.split("/").length - 1])
                 if(JSON.parse(tags).error) response.writeHead(404, {'Content-Type': 'application/json'})
                 response.write(tags)
-            }else if(request.url.match(/\/api\/photos\/getfile\/([0-9]+)\/[a-zA-Z]/)){
-                const filter = request.url.split("/")[request.url.split("/").length - 1]
-                const photo = IC.getPhoto(request.url.split("/")[request.url.split("/").length - 2])
-                if(JSON.parse(photo).error){
+            }else if(request.url.match(/\/api\/photos\/getfile_filtered\/([0-9]+)/)){
+                const url = IC.getFilteredUrl(request.url.split("/")[request.url.split("/").length - 2])
+                if(JSON.parse(url).error){
                     response.writeHead(404, {'Content-Type': 'application/json'})
-                    response.write(photo)
+                    response.write(url)
                     break
                 }
-                const url = JSON.parse(photo).history.find(i => {
-                    return i.status == filter
-                })
-                if(!url){
-                    response.writeHead(404, {'Content-Type': 'application/json'})
-                    response.write(JSON.stringify({error: `Filter ${filter} not found for this photo!`}))
-                    break
-                }
-                const res = await readPhoto(url.url)
+                const res = await readPhoto(url)
                 if(!res){
                     response.writeHead(404, {'Content-Type': 'application/json'})
                     response.write(JSON.stringify({error: "Error while reading file!"}))
@@ -66,10 +57,17 @@ const imageRouter = async (request, response) => {
                 const uploadData = await saveFile(request, response, false)
                 const newPhoto = IC.addPhoto(uploadData)
                 response.write(newPhoto)
+            }else if(request.url == "/api/photos/location"){
+                const data = await getRequestData(request)
+                const photo = IC.setLocation(JSON.parse(data))
+                if(JSON.parse(photo).error){
+                    response.writeHead(404, {'Content-Type': 'application/json'})
+                }
+                response.write(photo)
             }
             break;
         case "DELETE":
-            response.writeHead(200, {'Content-Type': 'text/html'})
+            response.writeHead(200, {'Content-Type': 'application/json'})
             if(request.url.match(/\/api\/photos\/([0-9]+)/)){
                 const urlDeleted = IC.delPhoto(request.url.split("/")[request.url.split("/").length - 1])
                 if(!JSON.parse(urlDeleted).error){
@@ -83,7 +81,7 @@ const imageRouter = async (request, response) => {
             }
             break;
         case "PATCH":
-            response.writeHead(200, {'Content-Type': 'text/html'})
+            response.writeHead(200, {'Content-Type': 'application/json'})
             if(request.url == "/api/photos"){
                 const data = await getRequestData(request)
                 const idPatched = IC.patchPhoto(JSON.parse(data))

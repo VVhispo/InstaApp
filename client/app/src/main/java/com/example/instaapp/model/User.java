@@ -21,4 +21,9 @@ public class User {
     public String getBio(){
         return bio;
     }
+    public String getFirstName(){ return name; }
+    public String getLastName(){ return lastName; }
+    public String toString(){
+        return name + "_" + lastName + "_" + email + "_" + bio;
+    }
 }

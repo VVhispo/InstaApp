@@ -36,8 +36,8 @@ PATCH  http://localhost:3000/api/photos/tags HTTP/1.1
 content-type: application/json
 
 {
-  "photo_id":  1685401835002,
-  "tag_id": 4
+  "photo_id":  1686124265212,
+  "tag_id": 5
 }
 
 ####
@@ -46,7 +46,7 @@ PATCH  http://localhost:3000/api/photos/tags/mass HTTP/1.1
 content-type: application/json
 
 {
-  "photo_id": 1685402061098,
+  "photo_id": 1686126116210,
   "tags": [3,4,5,56]
 }
 
@@ -60,6 +60,14 @@ GET http://localhost:3000/api/photos/getfile/1686081351771 HTTP/1.1
 
 #####
 
-GET http://localhost:3000/api/photos/getfile/1685402458357/grayscale HTTP/1.1
+GET http://localhost:3000/api/photos/getfile_filtered/1686249383617 HTTP/1.1
 
+####
 
+POST http://localhost:3000/api/photos/location HTTP/1.1
+content-type: application/json
+
+{
+  "id": 1686263321690,
+  "location":"w chuju"
+}

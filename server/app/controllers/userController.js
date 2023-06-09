@@ -64,7 +64,7 @@ module.exports = {
                 lastName: user.lastName,
                 email: user.email,
                 profilePicUrl: user.profilePicUrl,
-                bio: user.bio
+                bio: user.bio,
             })
 
         }catch (ex) {
@@ -77,5 +77,16 @@ module.exports = {
         if(!user) return JSON.stringify({"error": "User not found"})
         user.profilePicUrl = url;
         return JSON.stringify({user})
+    },
+    patchUserProfile: async(token, data) => {
+        const decoded = await jwt.verify(token, process.env.JWT_KEY)
+        const user = usersArray.find(u => { return u.id == decoded.user_id })
+        if(!user) return JSON.stringify({error: "User not found"})
+        const {name, lastName, email, bio} = data
+        if(name) user.name = name;
+        if(lastName) user.lastName = lastName;
+        if(email) user.email = email;
+        if(bio) user.bio = bio;
+        return JSON.stringify(user)
     }
 }

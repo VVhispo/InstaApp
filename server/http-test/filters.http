@@ -11,12 +11,12 @@ Content-Type: image/jpeg
 Content-Disposition: form-data; name="album"
 Content-Type: text/plain
 
-album4
+album1
 ------FormBoundary1234
 
 ########
 
-GET http://localhost:3000/api/filters/metadata/168540134461 HTTP/1.1
+GET http://localhost:3000/api/filters/metadata/1686248945276 HTTP/1.1
 
 ####
 
@@ -25,11 +25,31 @@ Content-Disposition: form-data; name="data"
 Content-Type: application/json
 
 {
-  "id": 1685402458357,
-  "filterType": "grayscale",
+  "id": 1686268229516,
+  "filterType": "flip",
   "dimensions": {
-    "width": 640,
-    "height": 588
+    "width":230,
+    "height": 288
+  },
+  "tint": {
+    "r": 255,
+    "g": 0, 
+    "b": 0
+    }
+}
+
+###
+
+PATCH http://localhost:3000/api/filters HTTP/1.1
+Content-Disposition: form-data; name="data"
+Content-Type: application/json
+
+{
+  "id": 1686268229516,
+  "filterType": "tint",
+  "dimensions": {
+    "width":230,
+    "height": 288
   },
   "tint": {
     "r": 255,

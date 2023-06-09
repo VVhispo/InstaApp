@@ -19,50 +19,69 @@ module.exports = {
     },
     applyFilter: async(data) => {
         const {id, filterType, dimensions, tint} = data
+        console.log(filterType)
         const photo = IC.getPhoto(id)
-        if(!photo) return JSON.stringify({error: "Photo not found"})
-        const url = JSON.parse(photo).url
-
+        if(JSON.parse(photo).error) return photo
+        const originalUrl = JSON.parse(photo).url
+        let url = IC.getFilteredUrl(id)
+        if(!url) url = originalUrl
+        else url = JSON.parse(url)
+        const res = await IC.applyFilterUpdate({
+            id: JSON.parse(photo).id,
+            status: filterType,
+        })
+        console.log(url)
         
-        console.log(!dimensions.width)
-
+        // sharp.cache(false)
+        let buffer;
         switch(filterType){
+            case "flip":
+                buffer = await sharp(url)
+                    .flop()
+                    .toBuffer()
+                break;
+            case "flop":
+                buffer = await sharp(url)
+                    .flip()
+                    .toBuffer()
+                break;
             case "resize":
                 if(!dimensions || !dimensions.width || !dimensions.height) return JSON.stringify({error: "Dimensions not specified"})
-                await sharp(url)
-                    .resize({
-                        width: dimensions.width,
-                        height: dimensions.height
-                    })
-                    .toFile(url.slice(0,-4) + "_"+ filterType + ".jpg");
+                buffer = await sharp(url)
+                .resize({
+                    width: dimensions.width,
+                    height: dimensions.height
+                })
+                .toBuffer()
                 break;
             case "tint":
-                if(!tint || !tint.r || !tint.g || !tint.b) return JSON.stringify({error: "Color values not specified"})
-                await sharp(url)
+                if(!tint) return JSON.stringify({error: "Color values not specified"})
+                buffer = await sharp(url)
                 .tint({
                     r:tint.r,
                     g:tint.g,
                     b:tint.b
                 })
-                    .toFile(url.slice(0,-4) + "_"+ filterType + ".jpg");
-                break;
-            case "negate":
-                await sharp(url)
-                    .negate()
-                    .toFile(url.slice(0,-4) + "_"+ filterType + ".jpg");
+                .toBuffer()
                 break;
             case "grayscale":
-                await sharp(url)
+                buffer = await sharp(url)
                     .grayscale()
-                    .toFile(url.slice(0,-4) + "_"+ filterType + ".jpg");
+                    .toBuffer()
                 break;
             default: return JSON.stringify({error: "Filter unknown"});
-        }        
-        const res = await IC.applyFilterUpdate({
-            id: JSON.parse(photo).id,
-            status: filterType,
-            url: url.slice(0,-4) + "_"+ filterType + ".jpg"
-        })
+        }
+        sleep(500)
+        sharp(buffer).toFile(originalUrl.slice(0,-4) + "_filter.jpg");    
         return res
     }
 }
+
+function sleep(milliseconds) {
+    var start = new Date().getTime();
+    for (var i = 0; i < 1e7; i++) {
+      if ((new Date().getTime() - start) > milliseconds){
+        break;
+      }
+    }
+  }

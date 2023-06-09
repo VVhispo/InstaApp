@@ -54,3 +54,16 @@ u1686081809299
 
 GET http://localhost:3000/api/users/profilePic HTTP/1.1
 authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoidTE2ODYwODE5NzMzMjAiLCJpYXQiOjE2ODYwODE5NzMsImV4cCI6MTY4NjA4NTU3M30.1XIrqkIYQnwcNXeg1o1tjkmtXYTSkFWiqgw67M3qZp0
+
+
+#####
+
+
+PATCH  http://localhost:3000/api/users HTTP/1.1
+authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoidTE2ODYxMjUxOTYxODkiLCJpYXQiOjE2ODYxMjUxOTYsImV4cCI6MTY4NjEyODc5Nn0.GE137DavhtxIEfi0BahYmbwbkU3d-699nlRsZ4q0e1A
+content-type: application/json
+
+{
+  "name":  "changed",
+  "email": "changed"
+}

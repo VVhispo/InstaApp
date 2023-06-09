@@ -15,6 +15,7 @@ import retrofit2.http.FormUrlEncoded;
 import retrofit2.http.GET;
 import retrofit2.http.Header;
 import retrofit2.http.Multipart;
+import retrofit2.http.PATCH;
 import retrofit2.http.POST;
 import retrofit2.http.Part;
 
@@ -37,4 +38,7 @@ public interface UsersAPI {
 
     @GET("api/users/profile")
     Call<User> get_profileData(@Header("Authorization") String token);
+
+    @PATCH("api/users")
+    Call<User> patch_profileData(@Header("Authorization") String token, @Body User user);
 }

@@ -1,3 +1,5 @@
+const path = require("path")
+
 class Photo {
     constructor(album, originalName, url){
         this.id = Date.now()
@@ -5,6 +7,7 @@ class Photo {
         this.originalName = originalName;
         this.url = url;
         this.lastChange = 'original'
+        this.filteredUrl
         this.history = [
             {
                 "status": "original",
@@ -14,8 +17,9 @@ class Photo {
         this.tags = []
         photosArray.push(this)
     }
-    update(status = null, url = null){
-        if(!status && !url){
+    update(status = null){
+        if(!this.filteredUrl) this.filteredUrl = path.join(this.url.split(".")[0] + "_filter.jpg")
+        if(!status){
             this.history.push({
                 "status": "change " + this.history.length.toString(),
                 "lastModifiedDate": Date.now(),
@@ -24,7 +28,6 @@ class Photo {
             this.history.push({
                 "status": status,
                 "lastModifiedDate": Date.now(),
-                "url": url
             })
         }
         this.lastChange = this.history[this.history.length - 1].lastModifiedDate
