@@ -115,6 +115,19 @@
         android:layout_margin="20dp"
         app:borderWidth="0dp"
         />
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/tags_btn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:fabSize="mini"
+        android:src="@drawable/ic_baseline_tag_24"
+        app:tint="@color/white"
+        android:backgroundTint="@color/black_low_opa"
+        android:layout_alignParentBottom="true"
+        android:layout_marginLeft="20dp"
+        android:layout_marginBottom="68dp"
+        app:borderWidth="0dp"
+        />
     <TextView
         android:id="@+id/txt_location"
         android:layout_width="180dp"

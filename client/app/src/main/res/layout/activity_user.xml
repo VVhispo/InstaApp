@@ -1,45 +1,55 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
+    android:layout_height="wrap_content"
     tools:context=".view.user_profile.UserActivity"
-    android:background="@color/light_grey">
-    <FrameLayout
-        android:layout_width="match_parent"
-        android:layout_height="400dp"
-        android:background="@drawable/gradient_user_background">
+    android:id="@+id/nestedScroll">
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="290dp"
-            android:layout_gravity="bottom"
-            android:background="@color/light_grey"
+            android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:id="@+id/main_data_layout">
+            android:background="@color/white">
+            <FrameLayout
+                android:layout_width="match_parent"
+                android:layout_height="300dp"
+                android:background="@drawable/gradient_user_background"
+                android:id="@+id/layoutFrameUser">
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="190dp"
+                    android:layout_gravity="bottom"
+                    android:background="@color/light_grey"
+                    android:orientation="vertical"
+                    android:id="@+id/main_data_layout">
+                </LinearLayout>
+
+                <com.google.android.material.imageview.ShapeableImageView
+                    app:shapeAppearanceOverlay="@style/roundedImageViewRounded"
+                    android:layout_width="120dp"
+                    android:layout_height="120dp"
+                    android:id="@+id/profile_pic"
+                    android:layout_gravity="center_horizontal"
+                    android:layout_marginTop="50dp"
+                    android:background="@color/white"
+                    android:scaleType="centerCrop"/>
+
+                <com.google.android.material.imageview.ShapeableImageView
+                    android:src="@drawable/ic_baseline_add_a_photo_24"
+                    android:alpha="0.6"
+                    android:layout_width="80dp"
+                    android:layout_height="80dp"
+                    android:id="@+id/profile_pic_edit"
+                    android:layout_gravity="center_horizontal"
+                    android:layout_marginTop="70dp"
+                    android:visibility="invisible"/>
+            </FrameLayout>
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/postRecyclerView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:nestedScrollingEnabled="false" />
         </LinearLayout>
-
-        <com.google.android.material.imageview.ShapeableImageView
-            app:shapeAppearanceOverlay="@style/roundedImageViewRounded"
-            android:layout_width="120dp"
-            android:layout_height="120dp"
-            android:id="@+id/profile_pic"
-            android:layout_gravity="center_horizontal"
-            android:layout_marginTop="50dp"
-            android:background="@color/white"
-            android:scaleType="centerCrop"/>
-
-        <com.google.android.material.imageview.ShapeableImageView
-            android:src="@drawable/ic_baseline_add_a_photo_24"
-            android:alpha="0.6"
-            android:layout_width="80dp"
-            android:layout_height="80dp"
-            android:id="@+id/profile_pic_edit"
-            android:layout_gravity="center_horizontal"
-            android:layout_marginTop="70dp"
-            android:visibility="invisible"/>
-
-
-    </FrameLayout>
-
-</LinearLayout>
+</androidx.core.widget.NestedScrollView>

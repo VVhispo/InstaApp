@@ -16,6 +16,23 @@ album1
 
 ########
 
+PATCH http://localhost:3000/api/filters HTTP/1.1
+Content-Disposition: form-data; name="data"
+Content-Type: application/json
+
+{
+  "id": 1686797398655,
+  "filters": ["flip", "flop"],
+  "tint": {
+    "r": 255,
+    "g": 0, 
+    "b": 0
+    }
+}
+
+
+#########
+
 GET http://localhost:3000/api/filters/metadata/1686248945276 HTTP/1.1
 
 ####
@@ -25,7 +42,7 @@ Content-Disposition: form-data; name="data"
 Content-Type: application/json
 
 {
-  "id": 1686268229516,
+  "id": 1686701361786,
   "filterType": "flip",
   "dimensions": {
     "width":230,
@@ -45,7 +62,7 @@ Content-Disposition: form-data; name="data"
 Content-Type: application/json
 
 {
-  "id": 1686268229516,
+  "id": 1686701361786,
   "filterType": "tint",
   "dimensions": {
     "width":230,
@@ -57,3 +74,4 @@ Content-Type: application/json
     "b": 0
     }
 }
+

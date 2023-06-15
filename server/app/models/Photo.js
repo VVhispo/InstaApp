@@ -8,6 +8,7 @@ class Photo {
         this.url = url;
         this.lastChange = 'original'
         this.filteredUrl
+        this.thumbnailUrl
         this.history = [
             {
                 "status": "original",

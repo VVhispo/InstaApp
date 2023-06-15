@@ -18,13 +18,13 @@ const imageRouter = async (request, response) => {
                 if(JSON.parse(tags).error) response.writeHead(404, {'Content-Type': 'application/json'})
                 response.write(tags)
             }else if(request.url.match(/\/api\/photos\/getfile_filtered\/([0-9]+)/)){
-                const url = IC.getFilteredUrl(request.url.split("/")[request.url.split("/").length - 2])
+                const url = IC.getFilteredUrl(request.url.split("/")[request.url.split("/").length - 1])
                 if(JSON.parse(url).error){
                     response.writeHead(404, {'Content-Type': 'application/json'})
                     response.write(url)
                     break
                 }
-                const res = await readPhoto(url)
+                const res = await readPhoto(JSON.parse(url))
                 if(!res){
                     response.writeHead(404, {'Content-Type': 'application/json'})
                     response.write(JSON.stringify({error: "Error while reading file!"}))
@@ -43,6 +43,9 @@ const imageRouter = async (request, response) => {
                     response.writeHead(404, {'Content-Type': 'application/json'})
                     response.write(JSON.stringify({error: "Error while reading file!"}))
                 }
+                console.log(JSON.parse(photo).originalName)
+                console.log(JSON.parse(photo).url)
+                if(JSON.parse(photo).url.includes("mp4")) response.writeHead(200, {'Content-type':'video/mp4'})
                 response.writeHead(200, {'Content-type':'image/jpeg'})
                 response.write(res)
             }else if(request.url.match(/\/api\/photos\/([a-zA-Z]+)/)){

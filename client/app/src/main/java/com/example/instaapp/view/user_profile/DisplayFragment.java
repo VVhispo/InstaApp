@@ -26,6 +26,7 @@ public class DisplayFragment extends Fragment {
         View view = mainBinding.getRoot();
 
         ((UserActivity) getActivity()).setProfilePicEditable(false);
+        ((UserActivity) getActivity()).setStandardHeight();
 
         Fragment EditFragment = new EditedFragment();
 

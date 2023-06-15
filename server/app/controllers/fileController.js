@@ -19,9 +19,10 @@ module.exports = {
                     console.log("file undefined")
                     return;
                 }
+                const ext = "."+ file.name.split(".")[file.name.split(".").length - 1]
                 let new_path;
                 if(profilePic) new_path = path.join(uploadFolder, "user_profile_pic.jpg")
-                else new_path = path.join(uploadFolder, "upload_" + Date.now().toString() + ".jpg")
+                else new_path = path.join(uploadFolder, "upload_" + Date.now().toString() + ext)
                 try {
                     fs.copyFile(file.path, new_path, function(err){
                         if(err) console.log(err)
@@ -47,5 +48,5 @@ module.exports = {
                 else resolve(data)
             })
         })
-    },
+    }
 }

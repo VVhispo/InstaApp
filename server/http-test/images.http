@@ -11,7 +11,7 @@ Content-Type: image/jpeg
 Content-Disposition: form-data; name="album"
 Content-Type: text/plain
 
-u234234
+album1
 ------FormBoundary1234
 
 
@@ -20,15 +20,15 @@ GET http://localhost:3000/api/photos HTTP/1.1
 
 #########
 
-GET http://localhost:3000/api/photos/168540157050 HTTP/1.1
+GET http://localhost:3000/api/photos/1686707146432 HTTP/1.1
 
 #########
 
-DELETE http://localhost:3000/api/photos/168501688243 HTTP/1.1
+DELETE http://localhost:3000/api/photos/1686534704335 HTTP/1.1
 
 ##########
 
-GET http://localhost:3000/api/photos/album4 HTTP/1.1
+GET http://localhost:3000/api/photos/u1686782466726 HTTP/1.1
 
 #######
 
@@ -36,7 +36,7 @@ PATCH  http://localhost:3000/api/photos/tags HTTP/1.1
 content-type: application/json
 
 {
-  "photo_id":  1686124265212,
+  "photo_id":  1686700299900,
   "tag_id": 5
 }
 
@@ -46,7 +46,7 @@ PATCH  http://localhost:3000/api/photos/tags/mass HTTP/1.1
 content-type: application/json
 
 {
-  "photo_id": 1686126116210,
+  "photo_id": 1686700299900,
   "tags": [3,4,5,56]
 }
 
@@ -56,11 +56,11 @@ GET http://localhost:3000/api/photos/tags/1685402061098 HTTP/1.1
 
 #####
 
-GET http://localhost:3000/api/photos/getfile/1686081351771 HTTP/1.1
+GET http://192.168.1.102:3000/api/photos/getfile/1686788943195 HTTP/1.1
 
 #####
 
-GET http://localhost:3000/api/photos/getfile_filtered/1686249383617 HTTP/1.1
+GET http://localhost:3000/api/photos/getfile_filtered/1686701361786 HTTP/1.1
 
 ####
 

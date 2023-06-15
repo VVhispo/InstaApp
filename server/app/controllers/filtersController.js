@@ -19,7 +19,6 @@ module.exports = {
     },
     applyFilter: async(data) => {
         const {id, filterType, dimensions, tint} = data
-        console.log(filterType)
         const photo = IC.getPhoto(id)
         if(JSON.parse(photo).error) return photo
         const originalUrl = JSON.parse(photo).url
@@ -31,8 +30,7 @@ module.exports = {
             status: filterType,
         })
         console.log(url)
-        
-        // sharp.cache(false)
+        sharp.cache(false)
         let buffer;
         switch(filterType){
             case "flip":
@@ -71,9 +69,39 @@ module.exports = {
                 break;
             default: return JSON.stringify({error: "Filter unknown"});
         }
-        sleep(500)
+        sleep(3500)
         sharp(buffer).toFile(originalUrl.slice(0,-4) + "_filter.jpg");    
         return res
+    },
+    applyFilters: async(data) => {
+        const {id, filters, tint} = data
+        const photo = IC.getPhoto(id)
+        if(JSON.parse(photo).error) return photo
+        const originalUrl = JSON.parse(photo).url
+        const res = await IC.applyFilterUpdate({
+            id: JSON.parse(photo).id,
+            status: filters.join("_"),
+        })
+        console.log(filters)
+        const newUrl = originalUrl.slice(0,-4) + "_filter.jpg";
+        if(filters.length == 1){
+            if(filters[0] == "grayscale") await sharp(originalUrl).grayscale().withMetadata().toFile(newUrl);
+            if(filters[0] == "flip") await sharp(originalUrl).flip().withMetadata().toFile(newUrl);
+            if(filters[0] == "flop") await sharp(originalUrl).flop().withMetadata().toFile(newUrl);
+            if(filters[0] == "tint") await sharp(originalUrl).tint(tint).withMetadata().toFile(newUrl);
+        }else if(filters.length == 3){
+            if(filters.includes("grayscale")) await sharp(originalUrl).flip().flop().grayscale().withMetadata().toFile(newUrl);
+            if(filters.includes("tint")) await sharp(originalUrl).flip().flop().tint(tint).withMetadata().toFile(newUrl);
+        }else if(filters.length == 2){
+            if(filters.includes("flip") && filters.includes("flop")) await sharp(originalUrl).flip().flop().withMetadata().toFile(newUrl);
+            
+            if(filters.includes("flip") && filters.includes("grayscale")) await sharp(originalUrl).flip().grayscale().withMetadata().toFile(newUrl);
+            if(filters.includes("flip") && filters.includes("tint")) await sharp(originalUrl).flip().tint(tint).withMetadata().toFile(newUrl);
+
+            if(filters.includes("flop") && filters.includes("grayscale")) await sharp(originalUrl).flop().grayscale().withMetadata().toFile(newUrl);
+            if(filters.includes("flop") && filters.includes("tint")) await sharp(originalUrl).flop().tint(tint).withMetadata().toFile(newUrl);
+        }
+        return res;
     }
 }
 

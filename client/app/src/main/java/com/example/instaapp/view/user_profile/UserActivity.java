@@ -4,6 +4,8 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import android.content.Context;
 import android.content.DialogInterface;
@@ -12,29 +14,41 @@ import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Parcelable;
 import android.provider.MediaStore;
 import android.util.Base64;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 
 import com.example.instaapp.R;
+import com.example.instaapp.api.ImageAPI;
 import com.example.instaapp.api.UsersAPI;
 import com.example.instaapp.databinding.ActivityLoginBinding;
 import com.example.instaapp.databinding.ActivityUserBinding;
 import com.example.instaapp.databinding.FragmentEditedBinding;
+import com.example.instaapp.model.Photo;
 import com.example.instaapp.model.User;
 import com.example.instaapp.view.login_register.LoginActivity;
 import com.example.instaapp.view.main.HomeActivity;
+import com.example.instaapp.view.photo.DisplayPostActivity;
 import com.google.android.material.imageview.ShapeableImageView;
 import com.google.gson.Gson;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.io.InputStream;
+import java.util.Collections;
+import java.util.List;
 
 import okhttp3.MediaType;
 import okhttp3.MultipartBody;
@@ -53,6 +67,7 @@ public class UserActivity extends AppCompatActivity {
     private File uploaded_photo = null;
     private Bitmap uploaded_photo_bm = null;
     private User user;
+    private List<Photo> postList;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -72,7 +87,60 @@ public class UserActivity extends AppCompatActivity {
                 .commit();
 
         mainBinding.profilePicEdit.setOnClickListener(v -> loadPicture());
+        getPosts();
+        getWindow().getDecorView().setBackgroundColor(Color.WHITE);
     }
+    public void displayPost(Photo photo){
+        Intent intent = new Intent(UserActivity.this, DisplayPostActivity.class);
+        intent.putExtra("photo", (new Gson()).toJson(photo, Photo.class));
+        startActivity(intent);
+    }
+    public void getPosts(){
+        SharedPreferences sharedPref = this.getSharedPreferences("data", Context.MODE_PRIVATE);
+        String ip = sharedPref.getString("ip", "http://192.168.1.106:3000");
+        Retrofit retrofit = new Retrofit.Builder()
+                .baseUrl(ip)
+                .addConverterFactory(GsonConverterFactory.create())
+                .build();
+        ImageAPI iAPI  = retrofit.create(ImageAPI.class);
+        Call<List<Photo>> call = iAPI.getUserPosts(sharedPref.getString("user_id", "lost"));
+        call.enqueue(new Callback<List<Photo>>() {
+            @Override
+            public void onResponse(Call<List<Photo>> call, Response<List<Photo>> response) {
+                if(response.isSuccessful()){
+                    postList = response.body();
+                    Collections.reverse(postList);
+                    PostAdapter adapter = new PostAdapter(UserActivity.this, postList, ip);
+                    mainBinding.postRecyclerView.setLayoutManager(new LinearLayoutManager(UserActivity.this));
+                    mainBinding.postRecyclerView.setAdapter(adapter);
+                }
+            }
+
+            @Override
+            public void onFailure(Call<List<Photo>> call, Throwable t) {
+                Log.d("XXX", t.toString());
+            }
+        });
+
+    }
+
+    public static float convertDpToPixel(float dp, Context context){
+        return dp * ((float) context.getResources().getDisplayMetrics().densityDpi / DisplayMetrics.DENSITY_DEFAULT);
+    }
+
+    public void setStandardHeight(){
+        mainBinding.mainDataLayout.getLayoutParams().height = (int) convertDpToPixel(190, this);
+        mainBinding.layoutFrameUser.getLayoutParams().height = (int) convertDpToPixel(300, this);
+        mainBinding.mainDataLayout.requestLayout();
+        mainBinding.layoutFrameUser.requestLayout();
+    }
+    public void setEditedHeight(){
+        mainBinding.mainDataLayout.getLayoutParams().height = (int) convertDpToPixel(290, this);
+        mainBinding.layoutFrameUser.getLayoutParams().height = (int) convertDpToPixel(400, this);
+        mainBinding.mainDataLayout.requestLayout();
+        mainBinding.layoutFrameUser.requestLayout();
+    }
+
     public void saveChanges(FragmentEditedBinding binding){
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
 

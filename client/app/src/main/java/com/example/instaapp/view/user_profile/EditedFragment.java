@@ -24,6 +24,8 @@ public class EditedFragment extends Fragment {
         mainBinding = FragmentEditedBinding.inflate(getLayoutInflater());
         View view = mainBinding.getRoot();
 
+        ((UserActivity) getActivity()).setEditedHeight();
+
         mainBinding.closeBtn.setOnClickListener(v -> {
             getFragmentManager().popBackStack();
         });

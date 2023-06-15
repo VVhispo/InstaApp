@@ -9,6 +9,8 @@ const tagsRouter = async (request, response) => {
                 response.write(TC.getRawTags())
             }else if(request.url == "/api/tags"){
                 response.write(TC.getTags())
+            }else if(request.url == "/api/tags/popular"){
+                response.write(TC.getTagsPopular())
             }else if(request.url.match(/\/api\/tags\/([0-9]+)/)){
                 const id = request.url.split("/")[request.url.split("/").length - 1]
                 const tag = TC.getTag(id)

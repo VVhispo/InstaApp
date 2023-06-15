@@ -1,14 +1,19 @@
 package com.example.instaapp.view.main;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.camera.core.CameraSelector;
 import androidx.camera.core.ImageCapture;
 import androidx.camera.core.ImageCaptureException;
 import androidx.camera.core.Preview;
+import androidx.camera.core.VideoCapture;
 import androidx.camera.lifecycle.ProcessCameraProvider;
+import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import androidx.fragment.app.Fragment;
 
+import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.ContentValues;
 import android.content.Context;
@@ -21,16 +26,21 @@ import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.Vibrator;
 import android.provider.MediaStore;
 import android.util.Log;
 import android.view.View;
+import android.view.ViewTreeObserver;
 
+import com.example.instaapp.R;
 import com.example.instaapp.api.ImageAPI;
 import com.example.instaapp.api.UsersAPI;
 import com.example.instaapp.databinding.ActivityHomeBinding;
+import com.example.instaapp.model.BitmapData;
 import com.example.instaapp.model.Photo;
 import com.example.instaapp.view.photo.PhotoEditorActivity;
+import com.example.instaapp.view.photo.VideoEditorActivity;
 import com.example.instaapp.view.user_profile.UserActivity;
 import com.google.android.material.imageview.ShapeableImageView;
 import com.google.common.util.concurrent.ListenableFuture;
@@ -66,6 +76,9 @@ public class HomeActivity extends AppCompatActivity {
     private ImageCapture imageCapture;
     private CameraSelector lensFacing = CameraSelector.DEFAULT_BACK_CAMERA;
     private ProcessCameraProvider cameraProvider;
+    private Boolean recording = false;
+    private VideoCapture videoCapture;
+    private final Handler handler = new Handler();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -73,29 +86,105 @@ public class HomeActivity extends AppCompatActivity {
         mainBinding = ActivityHomeBinding.inflate(getLayoutInflater());
         View view = mainBinding.getRoot();
         setContentView(view);
-        getProfilePic(mainBinding.profileBtn);
 
-        mainBinding.profileBtn.setOnClickListener(v -> {
-            Intent intent = new Intent(HomeActivity.this, UserActivity.class);
-            startActivity(intent);
+
+        getProfilePic(mainBinding.profileBtn);
+        mainBinding.photoBtn.setOnClickListener(v -> {
+            takePhoto();
         });
+
+        mainBinding.photoBtn.setOnLongClickListener(v -> {
+            handler.postDelayed(new Runnable() {
+                public void run() {
+                    recording = true;
+                    start_recording();
+                    mainBinding.stopRecordingBtn.setOnClickListener(v -> stop_recording());
+                }
+            }, 500);
+            return true;
+        });
+        mainBinding.switchCameraBtn.setOnClickListener(v -> switchCamera());
+        mainBinding.profileBtn.setOnClickListener(v -> switchActivityToUser());
+
         if (!checkIfPermissionsGranted()) {
             requestPermissions(REQUIRED_PERMISSIONS, PERMISSIONS_REQUEST_CODE);
         } else {
             start_camera();
         }
-        mainBinding.switchCameraBtn.setOnClickListener(v -> {
-            if (lensFacing == CameraSelector.DEFAULT_FRONT_CAMERA) lensFacing = CameraSelector.DEFAULT_BACK_CAMERA;
-            else if (lensFacing == CameraSelector.DEFAULT_BACK_CAMERA) lensFacing = CameraSelector.DEFAULT_FRONT_CAMERA;
-            cameraProvider.unbindAll();
-            bindPreview(cameraProvider);
-        });
-        mainBinding.photoBtn.setOnClickListener(v -> {
-            Vibrator vibe = (Vibrator) this.getSystemService(VIBRATOR_SERVICE);
-            vibe.vibrate(100);
-            takePhoto();
-        });
+    }
 
+    @SuppressLint({"RestrictedApi", "MissingPermission"})
+    public void start_recording() {
+        mainBinding.profileBtn.setVisibility(View.INVISIBLE);
+        mainBinding.stopRecordingBtn.setVisibility(View.VISIBLE);
+        mainBinding.switchCameraBtn.setVisibility(View.INVISIBLE);
+        View recSign = mainBinding.recordingSign;
+        recSign.setVisibility(View.VISIBLE);
+        handler.postDelayed(new Runnable() {
+            public void run() {
+                if (recSign.getVisibility() == View.VISIBLE) recSign.setVisibility(View.INVISIBLE);
+                else recSign.setVisibility(View.VISIBLE);
+                handler.postDelayed(this, 1000);
+            }
+        }, 1000);
+
+        cameraProvider.unbindAll();
+        bindPreview(cameraProvider);
+
+        Date dNow = new Date();
+        @SuppressLint("SimpleDateFormat") SimpleDateFormat ft = new SimpleDateFormat("yyMMddhhmmssMs");
+        String datetime = ft.format(dNow);
+
+        ContentValues contentValues = new ContentValues();
+        contentValues.put(MediaStore.MediaColumns.DISPLAY_NAME, datetime);
+        contentValues.put(MediaStore.MediaColumns.MIME_TYPE, "video/mp4");
+
+
+
+        videoCapture.startRecording(
+                new VideoCapture.OutputFileOptions.Builder(
+                        getContentResolver(),
+                        MediaStore.Video.Media.EXTERNAL_CONTENT_URI,
+                        contentValues
+                ).build(),
+                ContextCompat.getMainExecutor(this),
+                new VideoCapture.OnVideoSavedCallback() {
+                    @Override
+                    public void onVideoSaved(@NonNull VideoCapture.OutputFileResults outputFileResults) {
+                        Uri imgData = outputFileResults.getSavedUri();
+                        Intent intent = new Intent(HomeActivity.this, VideoEditorActivity.class);
+                        intent.putExtra("URI", imgData);
+                        startActivity(intent);
+                    }
+
+                    @Override
+                    public void onError(int videoCaptureError, @NonNull String message, @Nullable Throwable cause) {
+                        // error
+                    }
+                });
+    }
+
+    @SuppressLint("RestrictedApi")
+    public void stop_recording(){
+        videoCapture.stopRecording();
+        mainBinding.profileBtn.setVisibility(View.VISIBLE);
+        mainBinding.stopRecordingBtn.setVisibility(View.INVISIBLE);
+        mainBinding.switchCameraBtn.setVisibility(View.VISIBLE);
+        handler.removeCallbacksAndMessages(null);
+        mainBinding.recordingSign.setVisibility(View.INVISIBLE);
+        cameraProvider.unbindAll();
+        bindPreview(cameraProvider);
+    }
+
+    public void switchActivityToUser(){
+        Intent intent = new Intent(HomeActivity.this, UserActivity.class);
+        startActivity(intent);
+    }
+    public void switchCamera(){
+        if (lensFacing == CameraSelector.DEFAULT_FRONT_CAMERA) lensFacing = CameraSelector.DEFAULT_BACK_CAMERA;
+        else if (lensFacing == CameraSelector.DEFAULT_BACK_CAMERA) lensFacing = CameraSelector.DEFAULT_FRONT_CAMERA;
+        cameraProvider.unbindAll();
+        bindPreview(cameraProvider);
     }
 
     @Override
@@ -105,6 +194,12 @@ public class HomeActivity extends AppCompatActivity {
     }
 
     public void takePhoto(){
+        Vibrator vibe = (Vibrator) this.getSystemService(VIBRATOR_SERVICE);
+        vibe.vibrate(100);
+        if(recording){
+            stop_recording();
+            return;
+        }
         Date dNow = new Date();
         @SuppressLint("SimpleDateFormat") SimpleDateFormat ft = new SimpleDateFormat("yyMMddhhmmssMs");
         String datetime = ft.format(dNow);
@@ -122,13 +217,13 @@ public class HomeActivity extends AppCompatActivity {
         imageCapture.takePicture(outputFileOptions,
                 ContextCompat.getMainExecutor(getBaseContext()),
                 new ImageCapture.OnImageSavedCallback() {
+                    Bitmap bm = mainBinding.camera.getBitmap();
                     @Override
                     public void onImageSaved(@NonNull ImageCapture.OutputFileResults outputFileResults) {
                         Uri imgData = outputFileResults.getSavedUri();
                         Intent intent = new Intent(HomeActivity.this, PhotoEditorActivity.class);
                         intent.putExtra("URI", imgData);
-                        if(lensFacing == CameraSelector.DEFAULT_BACK_CAMERA) intent.putExtra("side", "back");
-                        else intent.putExtra("side", "front");
+                        BitmapData.getInstance().setBitmap(bm);
                         startActivity(intent);
                     }
                     @Override
@@ -138,7 +233,7 @@ public class HomeActivity extends AppCompatActivity {
     }
 
     public void start_camera(){
-        cameraProviderFuture = ProcessCameraProvider.getInstance(this);
+        cameraProviderFuture = ProcessCameraProvider.getInstance(HomeActivity.this);
         cameraProviderFuture.addListener(() -> {
             try {
                 cameraProvider = cameraProviderFuture.get();
@@ -149,9 +244,9 @@ public class HomeActivity extends AppCompatActivity {
         }, ContextCompat.getMainExecutor(this));
     }
 
+    @SuppressLint("RestrictedApi")
     private void bindPreview(@NonNull ProcessCameraProvider cameraProvider) {
         Preview preview = new Preview.Builder().build();
-
         imageCapture =
                 new ImageCapture.Builder()
                         .setTargetRotation(mainBinding.camera.getDisplay().getRotation())
@@ -160,10 +255,13 @@ public class HomeActivity extends AppCompatActivity {
 
         preview.setSurfaceProvider(mainBinding.camera.getSurfaceProvider());
 
-        cameraProvider.bindToLifecycle(this, lensFacing, imageCapture, preview);
+        videoCapture = new VideoCapture.Builder()
+                        .setTargetRotation(mainBinding.camera.getDisplay().getRotation())
+                        .build();
+
+        if(recording) cameraProvider.bindToLifecycle(this, lensFacing, imageCapture, videoCapture, preview);
+        else cameraProvider.bindToLifecycle(this, lensFacing, imageCapture, preview);
     }
-
-
 
     @Override
     protected void onResume() {
@@ -206,4 +304,5 @@ public class HomeActivity extends AppCompatActivity {
         }
         return true;
     }
+
 }

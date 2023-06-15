@@ -10,6 +10,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -211,7 +212,7 @@ public class LoginActivity extends AppCompatActivity {
     public void switchActivityToMain(){
         Intent myIntent = new Intent(this, HomeActivity.class);
         startActivity(myIntent);
-        this.finish();
+        finish();
     }
 
     public void replaceFragment(Fragment fragment) {

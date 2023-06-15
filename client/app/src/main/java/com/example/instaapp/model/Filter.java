@@ -4,16 +4,16 @@ import java.math.BigInteger;
 
 public class Filter {
     private BigInteger id;
-    private String filterType;
+    private String[] filters;
     private Tint tint;
 
-    public Filter(BigInteger id, String filterType){
+    public Filter(BigInteger id, String[] filters){
         this.id = id;
-        this.filterType = filterType;
+        this.filters = filters;
     }
-    public Filter(BigInteger id, String filterType, int[] tint){
+    public Filter(BigInteger id, String[] filters, int[] tint){
         this.id = id;
-        this.filterType = filterType;
+        this.filters = filters;
         this.tint = new Tint(tint[0], tint[1], tint[2]);
     }
 }

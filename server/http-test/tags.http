@@ -15,6 +15,9 @@ POST http://localhost:3000/api/tags HTTP/1.1
 Content-Type: application/json
 
 {
-    "name":"test",
-    "popularity": 0
+    "name":"#friends"
 }
+
+###
+
+GET http://localhost:3000/api/tags/popular HTTP/1.1

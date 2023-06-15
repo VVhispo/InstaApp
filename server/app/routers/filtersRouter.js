@@ -7,9 +7,14 @@ const filtersRouter = async(request, response) => {
         const metadata = await FC.getPhotoMeta(request.url.split("/")[4])
         if(JSON.parse(metadata).error) response.writeHead(404, {'Content-Type': 'application/json'})
         response.write(metadata)
+    // }else if(request.method == "PATCH"  && request.url == "/api/filters"){
+    //     const data = await getRequestData(request)
+    //     const filtered = await FC.applyFilter(JSON.parse(data))
+    //     if(JSON.parse(filtered).error) response.writeHead(404, {'Content-Type': 'application/json'})
+    //     response.write(filtered)
     }else if(request.method == "PATCH"  && request.url == "/api/filters"){
         const data = await getRequestData(request)
-        const filtered = await FC.applyFilter(JSON.parse(data))
+        const filtered = await FC.applyFilters(JSON.parse(data))
         if(JSON.parse(filtered).error) response.writeHead(404, {'Content-Type': 'application/json'})
         response.write(filtered)
     }

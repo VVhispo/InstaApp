@@ -1,23 +1,16 @@
 package com.example.instaapp.view.photo;
 
-import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.fragment.app.Fragment;
+import androidx.media3.common.MediaItem;
+import androidx.media3.common.Player;
+import androidx.media3.exoplayer.ExoPlayer;
 
-import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.Color;
-import android.graphics.ColorMatrix;
-import android.graphics.ColorMatrixColorFilter;
-import android.graphics.LightingColorFilter;
-import android.graphics.Matrix;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
@@ -26,33 +19,23 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
-import android.widget.HorizontalScrollView;
-import android.widget.RadioGroup;
 
 import com.example.instaapp.R;
 import com.example.instaapp.api.ImageAPI;
-import com.example.instaapp.databinding.ActivityPhotoEditorBinding;
-import com.example.instaapp.model.BitmapData;
-import com.example.instaapp.model.Filter;
+import com.example.instaapp.databinding.ActivityVideoEditorBinding;
 import com.example.instaapp.model.Location;
 import com.example.instaapp.model.Photo;
 import com.example.instaapp.model.Tag;
 import com.example.instaapp.model.TagData;
+import com.example.instaapp.view.main.HomeActivity;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.chip.Chip;
 import com.google.android.material.chip.ChipGroup;
 
-import java.io.BufferedOutputStream;
 import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
-import java.util.stream.Collectors;
 
 import okhttp3.MediaType;
 import okhttp3.MultipartBody;
@@ -63,94 +46,39 @@ import retrofit2.Response;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
-public class PhotoEditorActivity extends AppCompatActivity {
+public class VideoEditorActivity extends AppCompatActivity {
 
-    private ActivityPhotoEditorBinding mainBinding;
-    private File photo_file;
-    private Bitmap original_photo;
-    private int[] rgb_filter;
-    private String filterColorType = "";
-    private Boolean flip = false;
-    private Boolean flop = false;
+    private ActivityVideoEditorBinding mainBinding;
+
+    private ExoPlayer exoPlayer;
     private String location_name = "";
+    private Uri videoURI;
     private BottomSheetDialog bottomSheetDialog;
     private List<Integer> TagsAdded = new ArrayList<>();
 
-    @SuppressLint("WrongThread")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        mainBinding = ActivityPhotoEditorBinding.inflate(getLayoutInflater());
+        mainBinding = ActivityVideoEditorBinding.inflate(getLayoutInflater());
         View view = mainBinding.getRoot();
         setContentView(view);
 
+
         Bundle data = getIntent().getExtras();
-        if(data != null){
-            Uri photoURI = data.getParcelable("URI");
-            photo_file = new File(getPath( PhotoEditorActivity.this, photoURI ));
+        if(data != null) {
+            videoURI = data.getParcelable("URI");
+            initializePlayer(videoURI);
         }
-        original_photo = BitmapData.getInstance().getBitmap();
-        mainBinding.displayImg.setImageBitmap(original_photo);
-        mainBinding.filtersBtn.setOnClickListener(v -> {
-            if(mainBinding.filtersUi.getVisibility() == View.INVISIBLE) mainBinding.filtersUi.setVisibility(View.VISIBLE);
-            else mainBinding.filtersUi.setVisibility(View.INVISIBLE);
-        });
-        mainBinding.btnCancel.setOnClickListener(v -> {
-            mainBinding.filtersUi.setVisibility(View.INVISIBLE);
-            mainBinding.radiogrpFilters.clearCheck();
-            mainBinding.displayImg.clearColorFilter();
-            mainBinding.displayImg.setImageAlpha(255);
-        });
-        mainBinding.flipBtn.setOnClickListener(v -> {
 
-            if(mainBinding.displayImg.getScaleX() == -1){
-                mainBinding.displayImg.setScaleX(1);
-                flip = false;
-            }
-            else {
-                mainBinding.displayImg.setScaleX(-1f);
-                flip = true;
-
-            }
-        });
-        mainBinding.flopBtn.setOnClickListener(v -> {
-            if(mainBinding.displayImg.getScaleY() == -1) {
-                mainBinding.displayImg.setScaleY(1);
-                flop = false;
-            }
-            else {
-                mainBinding.displayImg.setScaleY(-1f);
-                flop = true;
-            }
-        });
-        mainBinding.radiogrpFilters.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(RadioGroup radioGroup, int i) {
-                switch(i){
-                    case R.id.btn_greyscale:
-                        applyGreyScale();
-                        break;
-                    case R.id.btn_red:
-                        rgb_filter = new int[]{255, 0, 0};
-                        applyColorFilter();
-                        break;
-                    case R.id.btn_green:
-                        rgb_filter = new int[]{0, 255, 0};
-                        applyColorFilter();
-                        break;
-                    case R.id.btn_blue:
-                        rgb_filter = new int[]{0, 0, 255};
-                        applyColorFilter();
-                        break;
-                }
-
-            }
-        });
         mainBinding.locationBtn.setOnClickListener(v -> {
-            Intent intent = new Intent(PhotoEditorActivity.this, LocationActivity.class);
-            startActivityForResult(intent, 1);
+            Intent intent = new Intent(VideoEditorActivity.this, LocationActivity.class);
+            startActivityForResult(intent, 2);
         });
-        mainBinding.uploadBtn.setOnClickListener(v -> upload_photo());
+
+        mainBinding.uploadBtn.setOnClickListener(v -> {
+            uploadVideo();
+        });
+
         mainBinding.tagsBtn.setOnClickListener(v -> display_tags());
     }
 
@@ -172,7 +100,7 @@ public class PhotoEditorActivity extends AppCompatActivity {
             @Override
             public void onResponse(Call<List<Tag>> call, Response<List<Tag>> response) {
                 if(response.isSuccessful()){
-                    LayoutInflater inflater = PhotoEditorActivity.this.getLayoutInflater();
+                    LayoutInflater inflater = VideoEditorActivity.this.getLayoutInflater();
                     for(Tag tag: response.body()){
                         Chip chip = (Chip) inflater.inflate(R.layout.chip_popular_tag, null, false);
                         chip.setText(tag.getName());
@@ -200,7 +128,6 @@ public class PhotoEditorActivity extends AppCompatActivity {
         bottomSheetDialog.findViewById(R.id.add_tag_btn).setOnClickListener(v -> addTag(input, cg));
 
     }
-
     public void addTag(EditText input, ChipGroup cg) {
         if(input.getText().toString().length() == 0) return;
         SharedPreferences pref = getSharedPreferences("data", Context.MODE_PRIVATE);
@@ -232,7 +159,7 @@ public class PhotoEditorActivity extends AppCompatActivity {
         imm.toggleSoftInput(InputMethodManager.HIDE_IMPLICIT_ONLY, 0);
     }
     public void addTagToLayout(ChipGroup group, Tag tag){
-        LayoutInflater inflater = PhotoEditorActivity.this.getLayoutInflater();
+        LayoutInflater inflater = VideoEditorActivity.this.getLayoutInflater();
         Chip chip = (Chip) inflater.inflate(R.layout.chip_tag_editable, null, false);
         chip.setText(tag.getName());
         chip.setTag(tag.getID());
@@ -243,47 +170,11 @@ public class PhotoEditorActivity extends AppCompatActivity {
         });
     }
 
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-
-        if(requestCode == 1){
-            if(resultCode == Activity.RESULT_OK){
-                String result = data.getStringExtra("place_name");
-                Log.d("XXX", result);
-                location_name = result;
-                mainBinding.txtLocation.setText(result);
-            }else{
-                mainBinding.txtLocation.setText("");
-            }
-        }
-    }
-
-    public void applyGreyScale(){
-        filterColorType = "grayscale";
-        ColorMatrix matrix = new ColorMatrix();
-        matrix.setSaturation(0);  //0 means grayscale
-        ColorMatrixColorFilter cf = new ColorMatrixColorFilter(matrix);
-        mainBinding.displayImg.setColorFilter(cf);
-        mainBinding.displayImg.setImageAlpha(128);
-    }
-    public void applyColorFilter(){
-        filterColorType = "tint";
-        mainBinding.displayImg.setImageAlpha(255);
-        int mul = Color.argb(
-                255,
-            rgb_filter[0],
-            rgb_filter[1],
-            rgb_filter[2]
-        );
-        LightingColorFilter lightingColorFilter = new LightingColorFilter(mul, 0);
-        mainBinding.displayImg.setColorFilter(lightingColorFilter);
-    }
-
-    public void upload_photo(){
-        RequestBody requestFile = RequestBody.create(MediaType.parse("multipart/form-data"), photo_file);
+    public void uploadVideo(){
+        File file = new File(getPath(VideoEditorActivity.this, videoURI ));
+        RequestBody requestFile = RequestBody.create(MediaType.parse("multipart/form-data"), file);
         MultipartBody.Part body =
-                MultipartBody.Part.createFormData("file", photo_file.getName(), requestFile);
+                MultipartBody.Part.createFormData("file", file.getName(), requestFile);
         SharedPreferences pref = getSharedPreferences("data", Context.MODE_PRIVATE);
         RequestBody album = RequestBody.create(MediaType.parse("multipart/form-data"),pref.getString("user_id", "lost"));
         String ip = pref.getString("ip", "http://192.168.1.106:3000");
@@ -298,12 +189,24 @@ public class PhotoEditorActivity extends AppCompatActivity {
             public void onResponse(Call<Photo> call, Response<Photo> response) {
                 if(response.isSuccessful()){
                     BigInteger id = response.body().getId();
-                    upload_filters(id, iAPI);
                     if(location_name.length() > 0) upload_location(id, iAPI);
                     if(TagsAdded.size() > 0) upload_tags(id, iAPI);
+                    Intent intent = new Intent(VideoEditorActivity.this, HomeActivity.class);
+                    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                    startActivity(intent);
                     finish();
                 }
             }
+            @Override
+            public void onFailure(Call<Photo> call, Throwable t) { Log.d("XXX", "X"); }
+        });
+    }
+    public void upload_location(BigInteger id, ImageAPI iAPI){
+        Location location = new Location(id, location_name);
+        Call<Photo> call = iAPI.set_location(location);
+        call.enqueue(new Callback<Photo>() {
+            @Override
+            public void onResponse(Call<Photo> call, Response<Photo> response) {}
             @Override
             public void onFailure(Call<Photo> call, Throwable t) { Log.d("XXX", "X"); }
         });
@@ -319,43 +222,28 @@ public class PhotoEditorActivity extends AppCompatActivity {
             public void onFailure(Call<Photo> call, Throwable t) { Log.d("XXX", t.toString()); }
         });
     }
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
 
-    public void upload_filters(BigInteger id, ImageAPI iAPI){
-        List<String> filters = new ArrayList<>();
-        if(flip) filters.add("flop");
-        if(flop) filters.add("flip");
-        if(Objects.equals(filterColorType, "grayscale")) filters.add("grayscale");
-        else if(Objects.equals(filterColorType, "tint")) filters.add("tint");
-        Filter filter;
-        if(Objects.equals(filterColorType, "tint")) filter = new Filter(id, filters.toArray(new String[0]), rgb_filter);
-        else filter = new Filter(id, filters.toArray(new String[0]));
-
-        Call<Photo> call = iAPI.set_filter(filter);
-        call.enqueue(new Callback<Photo>() {
-            @Override
-            public void onResponse(Call<Photo> call, Response<Photo> response) {
-                if(!response.isSuccessful()){
-                    try {
-                        Log.d("XXX", response.errorBody().string());
-                    } catch (IOException e) {}
-                }
+        if(requestCode == 2){
+            if(resultCode == Activity.RESULT_OK){
+                String result = data.getStringExtra("place_name");
+                Log.d("XXX", result);
+                location_name = result;
             }
-            @Override
-            public void onFailure(Call<Photo> call, Throwable t) { Log.d("XXX", t.toString()); }
-        });
-
-
+        }
     }
 
-    public void upload_location(BigInteger id, ImageAPI iAPI){
-        Location location = new Location(id, location_name);
-        Call<Photo> call = iAPI.set_location(location);
-        call.enqueue(new Callback<Photo>() {
-            @Override
-            public void onResponse(Call<Photo> call, Response<Photo> response) {}
-            @Override
-            public void onFailure(Call<Photo> call, Throwable t) { Log.d("XXX", "X"); }
-        });
+    private void initializePlayer(Uri uri) {
+        exoPlayer = new ExoPlayer.Builder(VideoEditorActivity.this).build();
+        mainBinding.videoView.setPlayer(exoPlayer) ;
+
+        MediaItem mediaItem = MediaItem.fromUri(uri);
+        exoPlayer.setMediaItem(mediaItem);
+        exoPlayer.prepare();
+        exoPlayer.play();
+        exoPlayer.setRepeatMode(Player.REPEAT_MODE_ALL);
     }
 
     public static String getPath(Context context, Uri uri ) {
@@ -374,4 +262,5 @@ public class PhotoEditorActivity extends AppCompatActivity {
         }
         return result;
     }
+
 }
